@@ -321,7 +321,7 @@ Neste caso não estamos interessados em como é a estrutura $\hat{f}$ desde que 
 
 ---
 
-# Por que estimar f?
+# Por que ajustar uma f?
 
 * Predição
 * Inferência
@@ -377,7 +377,7 @@ __Y__ é uma variável categórica.
 
 ---
 
-# Ir p/ R
+# Ir para o R
 
 
 
@@ -656,7 +656,7 @@ arvore %>% rpart.plot::rpart.plot(type = 2, extra = 1)
 
 class: inverse
 background-image: url(img/ml_101.png)
-background-position: left 145px
+background-position: left 140px
 background-size: contain
 
 # Resumo dos conceitos

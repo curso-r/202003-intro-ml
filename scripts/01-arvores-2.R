@@ -29,7 +29,7 @@ ggplot() +
   geom_point(aes(x, y), data = filter(dados_plot, tipo == "y"), color = 'red') +
   geom_step(aes(x, y), data = filter(dados_plot, tipo != "y"), color = 'red') +
   theme_bw() +
-  geom_point(aes(x, y), data = novos_dados, color = 'blue')
+  geom_point(aes(x, y), data = novos_dados, color = 'blue', size = 2)
   
 
 # Us ----------------------------------------------------------------------

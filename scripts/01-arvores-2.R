@@ -8,12 +8,11 @@ library(ISLR)
 
 # Chegaram novos dados!
 
-# dados2 <- tibble(x = seq(1000, 2000, length.out = 5)) %>%
-# mutate(y = (x^2 - x + 1 + rnorm(n(), sd = mean(x)^1.8))/100)
-
 dados2 <- readRDS("dados/dados1_2.rds")
 
 plot(dados2)
+
+modelo <- fit(especificacao_arvore, y~x, data = dados1)
 
 valores_esperados <- predict(modelo, new_data = dados2)
 
@@ -26,21 +25,21 @@ dados_plot_2 <- novos_dados %>%
   gather(tipo, y, -x)
 
 ggplot() +
-  geom_point(aes(x, y), data = filter(dados_plot, tipo == "y"), color = 'red') +
-  geom_step(aes(x, y), data = filter(dados_plot, tipo != "y"), color = 'red') +
+  geom_point(aes(x, y), data = filter(dados_plot_1, tipo == "y"), color = 'red') +
+  geom_step(aes(x, y), data = filter(dados_plot_1, tipo != "y"), color = 'red') +
   theme_bw() +
   geom_point(aes(x, y), data = novos_dados, color = 'blue', size = 2)
   
 
 # Us ----------------------------------------------------------------------
 
-rmse(dados_e_previsao, truth = y, estimate = y_e)
+rmse(dados1_com_previsao, truth = y, estimate = y_e)
 rmse(novos_dados, truth = y, estimate = y_e)
 
-mape(dados_e_previsao, truth = y, estimate = y_e)
+mape(dados1_com_previsao, truth = y, estimate = y_e)
 mape(novos_dados, truth = y, estimate = y_e)
 
-mae(dados_e_previsao, truth = y, estimate = y_e)
+mae(dados1_com_previsao, truth = y, estimate = y_e)
 mae(novos_dados, truth = y, estimate = y_e)
 
 # You ---------------------------------------------------------------------

@@ -47,14 +47,17 @@ modelo <- especificacao_arvore %>%
 # notação: 1O: VARIAVEL RESPOSTA ~ VARIAVEIS EXPLICATIVAS; 2o: dados
 # exemplo: y ~ x + z + ...
 
-modelo <- fit(especificao_arvore, y~x, data = dados1)
+modelo <- fit(especificacao_arvore, y~x, data = dados1)
 # opção alternativa
 
 print(modelo)
 
+rpart.plot::prp(modelo$fit)
+
 # Passo 3: Analisar as previsões
 
 valores_ajustados <- predict(modelo, new_data = dados1)
+
 # podemos usar a função predict para aplicar o modelo em qualquer novo conjunto de dados (new_data)
 
 dados1_com_previsao <- dados1 %>% 
@@ -78,6 +81,7 @@ library(yardstick)
 
 # Métricas de erro
 rmse(dados1_com_previsao, truth = y, estimate = y_e)
+
 # residuo = truth-estimate
 
 mape(dados1_com_previsao, truth = y, estimate = y_e)
@@ -92,11 +96,19 @@ mase(dados1_com_previsao, truth = y, estimate = y_e)
 
 Hitters1 <- readRDS("dados/Hitters1.rds")
 View(Hitters1)
-help(Hitters1)
+help(Hitters)
 
 # 1. Defina uma especificação de f que caracterize uma árvore de regressão com o número de observações por nó valendo 5 (min_n).
+
+especificacao_arvore <- decision_tree(min_n = 5) %>%
+  set_engine("rpart") %>% 
+  set_mode("regression")
+
 # 2. Usando a base Hitters1, ajuste o modelo de árvore do exercício 1 para os Home Runs de cada jogador em 1986 (HmRuns),
 #    usando como variável explicativa o número de Home Runs que ele fez na vida (CHmRuns).
+
+
+
 # Se tiver dúvidas sobre a base, digite help(Hitters)
 # 3. Calcule RMSE, MAPE, MAE e MASE do modelo que você ajustou.
 # 4. [Extra] Faça um gráfico comparando as suas predições e o que realmente aconteceu.

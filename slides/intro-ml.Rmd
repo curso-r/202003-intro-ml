@@ -638,14 +638,11 @@ Exemplo: `min_n` das árvores
 decision_tree(min_n = 5)
 ```
 
-
-
 ]
 
 .pull-right[
 
 ```{r}
-
 arvore <- rpart::rpart(sales ~ investimento + midia, data = adv_ok, control = rpart.control(minbucket = 5))
 arvore %>% rpart.plot::rpart.plot(type = 2, extra = 1)
 ```

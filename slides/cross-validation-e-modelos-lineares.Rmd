@@ -1,0 +1,151 @@
+---
+title: "Introdução ao Machine Learning com R"
+subtitle: "Cross-validation e modelos lineares"
+author: "<img src = 'https://d33wubrfki0l68.cloudfront.net/9b0699f18268059bdd2e5c21538a29eade7cbd2b/67e5c/img/logo/cursor1-5.png' width = '40%'>"
+date: "`r Sys.Date()`"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    css: ["default", "default-fonts", "custom.css"]
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+library(ggplot2)
+library(magrittr)
+library(tidyverse)
+theme_set(theme_minimal(14))
+options(htmltools.dir.version = FALSE)
+```
+
+# Conteúdo
+
+- Cross-Validation
+
+- Regressão Linear
+
+- Regularização/LASSO
+
+- Regressão Logística
+
+- Matriz de Confusão
+
+- Curva ROC
+
+- F1
+
+---
+
+# Cross-validation (validação cruzada)
+
+**Objetivo da Validação cruzada:** estimar melhor o erro de predição.
+
+## Estratégia
+
+.pull-left[
+
+1) Dividir o banco de dados em K partes. (Por ex, K = 5 como na figura)
+
+2) Ajustar o mesmo modelo K vezes, deixar sempre um pedaço de fora para servir de base de teste.
+
+3) Teremos K valores de erros de teste. Tira-se a média dos erros.
+
+]
+
+.pull-right[
+<img src="img/k-fold-cv.png">
+---------------------------------> linhas
+]
+
+
+---
+
+# Cross-validation (validação cruzada)
+
+Ir para o R
+
+
+---
+
+# Regressão Linear
+
+
+
+.pull-left[
+
+### Regressão Linear Simples
+
+$$
+y = \beta_0 + \beta_1x
+$$
+
+### Exemplo: 
+
+$$
+dist = \beta_0 + \beta_1speed
+$$
+
+### No R:
+
+```{r, eval = FALSE}
+linear_reg() %>% 
+  fit(dist ~ speed, data=cars)
+```
+
+]
+
+
+.pull-right[
+
+```{r,echo = FALSE}
+grafico_da_reta <- ggplot(cars, aes(x = speed, y = dist)) + 
+  geom_point(size = 5)  +
+  geom_smooth(se = FALSE, size = 3, method = "lm") +
+  theme_minimal(24)+
+  labs(
+    title = " "
+  ) 
+
+grafico_da_reta
+```
+
+]
+
+
+.footnote[
+Ver [ISL](https://www.ime.unicamp.br/~dias/Intoduction%20to%20Statistical%20Learning.pdf) página 61 (Simple Linear Regression).
+]
+
+
+---
+
+# Regularização - LASSO
+
+
+
+---
+class: inverse, center, middle
+
+# CLASSIFICAÇÃO
+
+---
+
+# Regressão Logística
+
+---
+
+# Matriz de Confusão
+
+
+---
+
+# Curva ROC
+
+---
+
+# F1
+
+

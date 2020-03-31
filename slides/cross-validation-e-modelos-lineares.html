@@ -4,7 +4,7 @@
     <title>Introdução ao Machine Learning com R</title>
     <meta charset="utf-8" />
     <meta name="author" content="" />
-    <meta name="date" content="2020-03-30" />
+    <meta name="date" content="2020-03-31" />
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
     <link rel="stylesheet" href="custom.css" type="text/css" />
@@ -16,7 +16,7 @@ class: center, middle, inverse, title-slide
 # Introdução ao Machine Learning com R
 ## Cross-validation e modelos lineares
 ### <img src = 'https://d33wubrfki0l68.cloudfront.net/9b0699f18268059bdd2e5c21538a29eade7cbd2b/67e5c/img/logo/cursor1-5.png' width = '40%'>
-### 2020-03-30
+### 2020-03-31
 
 ---
 
@@ -62,6 +62,29 @@ class: center, middle, inverse, title-slide
 ---------------------------------&gt; linhas
 ]
 
+---
+
+## Validação Cruzada
+
+
+```r
+vfold_cv(cars, v = 5)
+```
+
+
+```
+## #  5-fold cross-validation 
+## # A tibble: 5 x 6
+##   splits          id    n_treino n_teste regressao    rmse_teste
+## * &lt;named list&gt;    &lt;chr&gt;    &lt;dbl&gt;   &lt;dbl&gt; &lt;named list&gt;      &lt;dbl&gt;
+## 1 &lt;split [40/10]&gt; Fold1       40      10 &lt;lm&gt;               12.0
+## 2 &lt;split [40/10]&gt; Fold2       40      10 &lt;lm&gt;               21.4
+## 3 &lt;split [40/10]&gt; Fold3       40      10 &lt;lm&gt;               16.6
+## 4 &lt;split [40/10]&gt; Fold4       40      10 &lt;lm&gt;               11.3
+## 5 &lt;split [40/10]&gt; Fold5       40      10 &lt;lm&gt;               13.8
+```
+
+ERRO DE VALIDAÇÃO CRUZADA: `$$RMSE_{cv} = \sqrt{\frac{1}{10}\sum_{i=1}^{10}RMSE_{Fold_i}} = 15,01$$`
 
 ---
 
@@ -90,6 +113,15 @@ $$
 dist = \beta_0 + \beta_1speed
 $$
 
+]
+
+
+.pull-right[
+
+![](cross-validation-e-modelos-lineares_files/figure-html/unnamed-chunk-3-1.png)&lt;!-- --&gt;
+
+]
+
 ### No R:
 
 
@@ -97,15 +129,6 @@ $$
 linear_reg() %&gt;% 
   fit(dist ~ speed, data=cars)
 ```
-
-]
-
-
-.pull-right[
-
-![](cross-validation-e-modelos-lineares_files/figure-html/unnamed-chunk-2-1.png)&lt;!-- --&gt;
-
-]
 
 
 .footnote[
@@ -115,7 +138,144 @@ Ver [ISL](https://www.ime.unicamp.br/~dias/Intoduction%20to%20Statistical%20Lear
 
 ---
 
-# Regularização - LASSO
+# Regressão Linear
+
+
+.pull-left[
+
+### Regressão Linear Múltipla
+
+$$
+y = \beta_0 + \beta_1x_1 + \dots + \beta_px_p
+$$
+
+### Exemplo: 
+
+$$
+disp = \beta_0 + \beta_1wt + \beta_2mpg
+$$
+
+]
+
+.pull-right[
+
+&lt;img src="cross-validation-e-modelos-lineares_files/figure-html/unnamed-chunk-5-1.png" style="display: block; margin: auto;" /&gt;
+
+]
+
+
+### No R:
+
+
+```r
+linear_reg() %&gt;% 
+  fit(disp ~ wt + mpg, data=mtcars)
+```
+
+.footnote[
+Fonte: [sthda.com/impressive-package-for-3d](http://www.sthda.com/english/wiki/impressive-package-for-3d-and-4d-graph-r-software-and-data-visualization)
+]
+
+
+---
+
+# Regressão Linear - "Melhor Reta"
+
+Queremos a reta que **erre menos**.
+
+Uma medida de erro: RMSE
+
+$$
+RMSE = \sqrt{\frac{1}{N}\sum(y_i - \hat{y_i})^2}
+$$
+
+Ou seja, nosso é **encontrar os `\(\hat{\beta}'s\)` que nos retorne o ~menor~ RMSE.**
+
+#### IMPORTANTE! 
+
+o RMSE é a nossa **Função de Custo** e pode ser diferente da **Métrica** que vimos nos slides anteriores!
+
+- **Função de Custo** - para encontrar os melhores parâmetros.
+- **Métrica** - para encontrar os melhores hiperparâmetros.
+
+---
+
+## Qual o valor ótimo para `\(\beta_0\)` e `\(\beta_1\)`?
+
+No nosso exemplo, a nossa **HIPÓTESE** é de que 
+
+$$
+dist = \beta_0 + \beta_1speed
+$$
+
+Então podemos escrever o RMSE
+
+$$
+RMSE = \sqrt{\frac{1}{N}\sum(y_i - \hat{y_i})^2} = \sqrt{\frac{1}{N}\sum(y_i -  \color{red}{(\hat{\beta}_0 + \hat{\beta}_1speed)})^2} 
+$$
+
+Com ajuda do Cálculo é possível mostrar que os valores ótimos para `\(\beta_0\)` e `\(\beta_1\)` são
+
+`\(\hat{\beta}_1 = \frac{\sum(x_i - \bar{x})(y_i - \bar{y})}{\sum(x_i - \bar{x})^2}\)`
+
+`\(\hat{\beta}_0 = \bar{y} - \hat{\beta}_1\bar{x}\)`
+
+OBS: Já que vieram do EQM, eles são chamados de **Estimadores de Mínimos Quadrados**.
+
+
+---
+
+## Regularização - LASSO
+
+Relembrando o nossa **função de custo** RMSE.
+
+`$$RMSE = \sqrt{\frac{1}{N}\sum(y_i - \hat{y_i})^2} = \sqrt{\frac{1}{N}\sum(y_i -  \color{red}{(\hat{\beta}_0 + \hat{\beta}_1x_{1i} + \dots + \hat{\beta}_px_{pi})})^2}$$`
+
+Regularizar é "não deixar os `\(\beta's\)` soltos demais".
+
+`$$RMSE_{regularizado} = RMSE + \color{red}{\lambda}\sum_{j = 1}^{p}|\beta_j|$$`
+
+Ou seja, **penalizamos** a função de custo se os `\(\beta's\)` forem muito grandes.
+
+**PS1:** O `\(\color{red}{\lambda}\)` é um hiperparâmetro para a Regressão Linear.
+
+**PS2:** Quanto maior o `\(\color{red}{\lambda}\)`, mais penalizamos os `\(\beta's\)` por serem grandes.
+
+.footnote[
+Ver [ISL](https://www.ime.unicamp.br/~dias/Intoduction%20to%20Statistical%20Learning.pdf) página 203 (Linear Model Selection and Regularization).
+]
+
+
+---
+
+## Regularização - LASSO
+
+Conforme aumentamos o `\(\color{red}{\lambda}\)`, forçamos os `\(\beta's\)` a serem cada vez menores.
+
+
+![scatter_eqm](img/betas.png)
+
+
+.footnote[
+Ver [ISL](https://www.ime.unicamp.br/~dias/Intoduction%20to%20Statistical%20Learning.pdf) página 219 (The LASSO).
+]
+
+---
+
+## Regularização - LASSO
+
+Existe um `\(\color{red}{\lambda}\)` que retorna o menor erro de cross-validation.
+
+
+![scatter_eqm](img/lasso_lambda.png)
+
+.footnote[
+Ver [ISL](https://www.ime.unicamp.br/~dias/Intoduction%20to%20Statistical%20Learning.pdf) página 219 (The LASSO).
+]
+
+
+---
+
 
 
 
@@ -131,6 +291,7 @@ class: inverse, center, middle
 ---
 
 # Matriz de Confusão
+
 
 ---
 

@@ -258,6 +258,10 @@ OBS: Já que vieram do EQM, eles são chamados de **Estimadores de Mínimos Quad
 
 ---
 
+## Regressão linear
+
+No R
+
 ## Regularização - LASSO
 
 Relembrando o nossa **função de custo** RMSE.

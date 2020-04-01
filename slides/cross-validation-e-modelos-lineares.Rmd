@@ -18,6 +18,7 @@ library(ggplot2)
 library(magrittr)
 library(tidyverse)
 library(plot3D)
+library(ISLR)
 theme_set(theme_minimal(14))
 options(htmltools.dir.version = FALSE)
 ```
@@ -324,6 +325,53 @@ class: inverse, center, middle
 ---
 
 # Regressão Logística
+
+
+
+.pull-left[
+
+### Para  $Y \in {0, 1}$ (binário)
+
+$$
+log\left\(\frac{p}{1-p}\right\) = \beta_0 + \beta_1x
+$$
+
+em que $p = P(Y = 1|x)$.
+
+Lembrete: No caso de 
+]
+
+
+.pull-right[
+
+```{r,echo = FALSE, fig.height=4.5}
+grafico_da_reta <- ggplot(cars, aes(x = speed, y = dist)) + 
+  geom_point(size = 5)  +
+  geom_smooth(se = FALSE, size = 3, method = "lm") +
+  theme_minimal(24)+
+  labs(
+    title = " "
+  ) 
+
+grafico_da_reta
+```
+
+]
+
+### No R:
+
+```{r, eval = FALSE}
+logistic_reg() %>% 
+  fit(dist ~ speed, data=Default)
+```
+
+
+.footnote[
+Ver [ISL](https://www.ime.unicamp.br/~dias/Intoduction%20to%20Statistical%20Learning.pdf) página 131 (Logistic Regression).
+]
+
+
+
 
 ---
 

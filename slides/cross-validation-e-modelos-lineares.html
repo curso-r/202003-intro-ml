@@ -4,7 +4,7 @@
     <title>Introdução ao Machine Learning com R</title>
     <meta charset="utf-8" />
     <meta name="author" content="" />
-    <meta name="date" content="2020-03-31" />
+    <meta name="date" content="2020-04-01" />
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
     <link rel="stylesheet" href="custom.css" type="text/css" />
@@ -16,7 +16,7 @@ class: center, middle, inverse, title-slide
 # Introdução ao Machine Learning com R
 ## Cross-validation e modelos lineares
 ### <img src = 'https://d33wubrfki0l68.cloudfront.net/9b0699f18268059bdd2e5c21538a29eade7cbd2b/67e5c/img/logo/cursor1-5.png' width = '40%'>
-### 2020-03-31
+### 2020-04-01
 
 ---
 
@@ -276,6 +276,10 @@ Ver [ISL](https://www.ime.unicamp.br/~dias/Intoduction%20to%20Statistical%20Lear
 
 ---
 
+## Regularização - LASSO
+
+Ir para o R
+
 
 
 
@@ -288,6 +292,44 @@ class: inverse, center, middle
 
 # Regressão Logística
 
+
+
+.pull-left[
+
+### Para  `\(Y \in {0, 1}\)` (binário)
+
+$$
+log\left\(\frac{p}{1-p}\right\) = \beta_0 + \beta_1x
+$$
+
+em que `\(p = P(Y = 1|x)\)`.
+
+Lembrete: No caso de 
+]
+
+
+.pull-right[
+
+![](cross-validation-e-modelos-lineares_files/figure-html/unnamed-chunk-7-1.png)&lt;!-- --&gt;
+
+]
+
+### No R:
+
+
+```r
+logistic_reg() %&gt;% 
+  fit(dist ~ speed, data=Default)
+```
+
+
+.footnote[
+Ver [ISL](https://www.ime.unicamp.br/~dias/Intoduction%20to%20Statistical%20Learning.pdf) página 131 (Logistic Regression).
+]
+
+
+
+
 ---
 
 # Matriz de Confusão
@@ -299,7 +341,9 @@ class: inverse, center, middle
 
 ---
 
-# F1
+# Outras Métricas
+
+## F1
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

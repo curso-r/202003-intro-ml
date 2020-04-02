@@ -105,7 +105,6 @@ rmse(df_1, truth = b, estimate = b_e)
 # 
 # Usando o melhor modelo, compare a imagem original com a imagem reconstruida.
 
-
 # 2) Usando CV encontre o melhor modelo de árvore de decisão para recuperar a cor
 # azul da imagem 1 tunando o hiperparâmetro `min_n`.
 #

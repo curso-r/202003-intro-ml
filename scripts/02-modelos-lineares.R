@@ -63,5 +63,8 @@ mape(Auto_com_previsao, truth = mpg, estimate = mpg_e)
 
 # Exercícios
 
-# 1. Ajuse um modelo para a variável resposta mpg com variáveis explicativas sendo horsepower, 
-# 2.
+# 1. Ajuste um modelo para a variável resposta mpg com variáveis explicativas sendo horsepower, cylinders e acceleration.
+# O que aconteceu com o erro quadrático médio?
+# 2. Ajusta um modelo com todas as variáveis. Quais são relevantes para o modelo?
+# Qual foi o erro quadrático médio desse modelo?
+# Dica: se você quiser usar todas as variáveis, basta adicionar um ponto à direita do til.

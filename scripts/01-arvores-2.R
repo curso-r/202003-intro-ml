@@ -7,6 +7,7 @@ library(ISLR)
 # Me ----------------------------------------------------------------------
 
 # Chegaram novos dados!
+# comentário novo
 
 dados2 <- readRDS("dados/dados1_2.rds")
 

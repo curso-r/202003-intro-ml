@@ -4,7 +4,6 @@ library(tidymodels)
 library(parsnip)
 library(ISLR)
 
-
 # Me ----------------------------------------------------------------------
 
 # Como podemos nos proteger?
@@ -14,6 +13,8 @@ library(ISLR)
 
 #saveRDS(dados3, "dados/dados_1_3.rds")
 
+dados1 <- readRDS("dados/dados1.rds")
+dados2 <- readRDS("dados/dados1_2.rds")
 dados3 <- readRDS("dados/dados1_3.rds")
 
 todos_os_dados <- bind_rows(dados1, dados2, dados3)
@@ -55,6 +56,9 @@ mae(novos_dados, truth = y, estimate = y_e2)
 mape(novos_dados, truth = y, estimate = y_e1)
 mape(novos_dados, truth = y, estimate = y_e2)
 
+rsq(novos_dados, truth = y, estimate = y_e1)
+rsq(novos_dados, truth = y, estimate = y_e2)
+
 # You ---------------------------------------------------------------------
 
 # dados4 <- tibble(x = seq(0, 2000, length.out = 20)) %>%
@@ -85,3 +89,13 @@ mape(final, truth = y, estimate = y_e2)
 
 # 1. Avalia o modelo 1 e o modelo 2 nos novos dados. Qual deles foi melhor? Varie os valores e min_n e veja se você consegue encontrar um modelo melhor ainda.
 # 2. [Extra] Encontra o melhor min_n da base Hitters separando a base em 3. Ajuste o modelo em um pedaço, procure o melhor min_n na outra e teste na que sobrou.
+
+Hitters_separacao <- initial_split(Hitters, prop = .75)
+
+treino <- training(Hitters_separacao)
+teste <- testing(Hitters_separacao)
+
+teste_sep <- initial_split(teste, prop =.5)
+
+teste1 = training(teste_sep)
+teste2 = testing(teste_sep)

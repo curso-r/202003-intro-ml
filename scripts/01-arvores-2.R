@@ -9,6 +9,8 @@ library(ISLR)
 # Chegaram novos dados!
 # comentário novo
 
+# fiz um outro comentario
+
 dados2 <- readRDS("dados/dados1_2.rds")
 
 plot(dados2)

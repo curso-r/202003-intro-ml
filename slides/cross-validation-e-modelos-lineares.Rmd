@@ -39,8 +39,6 @@ options(htmltools.dir.version = FALSE)
 
 - Curva ROC
 
-- F1
-
 ---
 
 # Cross-validation (validação cruzada)

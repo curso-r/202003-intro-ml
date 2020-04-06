@@ -19,8 +19,7 @@ help(Auto)
 # Passo 1: Especificações de f:
 
 especificacao_lm <- linear_reg() %>%
-  set_engine("lm") %>% 
-  set_mode("regression")
+  set_engine("lm")
 
 # Us ----------------------------------------------------------------------
 
@@ -30,6 +29,9 @@ modelo_linear <- especificacao_lm %>%
   fit(mpg~horsepower, data = Auto)
 
 print(modelo_linear)
+
+# mpg = 39.9459 + -0.1578*(horsepower)
+
 summary(modelo_linear$fit)
 
 # Passo 3: Analisar as previsões

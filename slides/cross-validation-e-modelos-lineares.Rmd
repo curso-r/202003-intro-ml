@@ -16,6 +16,8 @@ output:
 ```{r setup, include=FALSE}
 library(ggplot2)
 library(magrittr)
+library(knitr)
+library(kableExtra)
 library(tidyverse)
 library(plot3D)
 library(ISLR)
@@ -259,10 +261,6 @@ OBS: Já que vieram do EQM, eles são chamados de **Estimadores de Mínimos Quad
 
 ---
 
-## Regressão linear
-
-No R
-
 ## Regularização - LASSO
 
 Relembrando o nossa **função de custo** RMSE.
@@ -334,7 +332,7 @@ class: inverse, center, middle
 
 .pull-left[
 
-### Para  $Y \in {0, 1}$ (binário)
+### Para  $Y \in \{0, 1\}$ (binário)
 
 $$
 log\left\(\frac{p}{1-p}\right\) = \beta_0 + \beta_1x
@@ -342,22 +340,35 @@ $$
 
 em que $p = P(Y = 1|x)$.
 
-Lembrete: No caso de 
+
 ]
 
 
 .pull-right[
 
-```{r,echo = FALSE, fig.height=4.5}
-grafico_da_reta <- ggplot(cars, aes(x = speed, y = dist)) + 
-  geom_point(size = 5)  +
-  geom_smooth(se = FALSE, size = 3, method = "lm") +
-  theme_minimal(24)+
-  labs(
-    title = " "
+```{r,echo = FALSE, fig.height=5}
+set.seed(1)
+email <- tibble(
+  pts_exclamacao = sample.int(300, 1000, replace = TRUE),
+  x = runif(1000) - 0.5,
+  spam = rbinom(1000, 1, prob = 1/(1 + exp(-(-5.9 + 1/23*pts_exclamacao + 2 * x)))),
+    `Regressão Linear` = predict(lm(spam~pts_exclamacao)),
+    `Regressão Logística` = predict(glm(spam~pts_exclamacao, family = binomial()), type = "response")
   ) 
 
-grafico_da_reta
+email %>%
+  sample_n(100) %>%
+  gather("modelo", "pred", starts_with("Reg")) %>%
+  ggplot(aes(x = pts_exclamacao, y = spam)) + 
+  geom_point(size = 5, alpha = 0.2)  +
+  geom_line(size = 3, aes(y = pred, colour = modelo), show.legend = FALSE) +
+  facet_wrap(~ modelo) +
+  theme_minimal(24)+
+  labs(
+    title = "Y = 1: E-mail é Spam", x = "Qtd de pontos de exclamação"
+  ) +
+  scale_y_continuous(breaks = c(0, 1), labels = c("Y = 0", "Y = 1")) +
+  theme(axis.title.y = element_blank())
 ```
 
 ]
@@ -374,24 +385,259 @@ logistic_reg() %>%
 Ver [ISL](https://www.ime.unicamp.br/~dias/Intoduction%20to%20Statistical%20Learning.pdf) página 131 (Logistic Regression).
 ]
 
+---
 
+# Regressão Logística - Custo e Regularização
+
+A **função de custo** da Regressão Logística chama-se *Deviance* (ou *Binary Cross-Entropy*):
+
+$$D = \frac{1}{N}\sum[y_i \log\hat{y_i} + (1 - y_i )\log(1 - \hat{y_i})]$$
+
+Regularizar é analogo a Regressão Linear.
+
+$$D_{regularizado} = D + \color{red}{\lambda}\sum_{j = 1}^{p}|\beta_j|$$
+
+**PS1:** $\hat{y_i} = \hat{p_i} = \hat{P}(Y = 1|X)$.
+
+**PS2:** Se $\log\left(\frac{\hat{p_i}}{1-\hat{p_i}}\right) = \beta_0 + \beta_1x$ então 
+$\hat{p_i} = \frac{1}{1 + e^{-(\beta_0 + \beta_1x)}}$. 
+
+---
+
+# Regressão Logística - Predições
+
+O "produto final" será um vetor de probabilidades estimadas.
+
+.pull-left[
+
+```{r, echo = FALSE}
+email_tratado <- email %>%
+  select(pts_exclamacao, spam, `Regressão Logística`) %>%
+  rename(
+    prob = `Regressão Logística`,
+    `pts excl` = pts_exclamacao,
+    `classe observada` = spam
+  ) %>%
+  mutate(
+    prob = round(prob, 2),
+    `classe predita` = if_else(prob < 0.5, "Não Spam", "Spam"),
+    `classe observada` = if_else(`classe observada` == 0, "Não Spam", "Spam"),
+  ) 
+
+email_tratado %>%
+  head() %>%
+  kable() %>%
+  kableExtra::row_spec(0:6, align = "center", background = "white") %>%
+  kableExtra::column_spec(3, background = "#6688f3", color = "white", include_thead = TRUE)
+```
+
+]
+
+.pull-right[
+
+```{r, echo=FALSE}
+email_tratado %>%
+  ggplot(aes(x = `prob`, fill = `classe observada`, colour = `classe observada`)) +
+  geom_density(alpha = 0.2, size = 2) +
+  geom_vline(xintercept = 0.5, size = 2, colour = "purple", linetype = "dashed") +
+  geom_label(x = 0.5, y = 5, hjust = -0.1, label = "threshold", colour = "purple", size = 7, fontface = "bold", fill = "#f0deff") +
+  theme_minimal(28) +
+  labs(y = "Concentração", x = expression(hat(y) (prob))) +
+  theme(
+    legend.position = "bottom"
+  ) +
+  guides(fill = guide_legend(nrow = 2, ncol = 1, byrow = TRUE)) 
+```
+
+
+]
 
 
 ---
+
+```{r, echo=FALSE}
+confusion_matrix_kable <- function(threshold, font_size = 20) {
+  header <- c(1, 2)
+  names(header) <- c(paste0("p > ", scales::percent(threshold)), "Observado")
+  email %>%
+    mutate(
+      Predito = factor(if_else(`Regressão Logística` < threshold, "Não Spam", "Spam"), levels = c("Não Spam", "Spam")),
+      spam = factor(if_else(spam == 0, "Não Spam", "Spam"), levels = c("Não Spam", "Spam")),
+    ) %>%
+    count(Predito, spam) %>%
+    spread(spam, n, fill = 0) %>% 
+    kable() %>%
+    kable_styling(c("bordered", "basic"), full_width = FALSE, font_size = font_size) %>%
+    add_header_above(header, background = "white", color = c("red", "black", "black")) %>%
+    collapse_rows(columns = 1, valign = "top") %>%
+    kableExtra::row_spec(0:2, background = "white", align = "center") %>%
+    kableExtra::column_spec(1, "3in", bold = TRUE) %>%
+    kableExtra::column_spec(2, "3in") %>%
+    kableExtra::column_spec(3, "2in") 
+}
+
+
+cm_num <- confusion_matrix_kable(threshold = 0.5)
+
+cm <- tribble(
+  ~Predito, ~`Neg     `, ~`Pos `,
+  "Neg",    "TN", "FN",
+  "Pos",    "FP", "TP"
+) %>% 
+  kable() %>%
+  kable_styling(c("bordered", "basic"), full_width = FALSE, font_size = 20) %>%
+  add_header_above(c(" " = 1, "Observado" = 2), background = "white") %>%
+  collapse_rows(columns = 1, valign = "top") %>%
+  kableExtra::row_spec(0:2, background = "white", align = "center") %>%
+  kableExtra::column_spec(1, "3in", bold = TRUE) %>%
+  kableExtra::column_spec(2, "3in") %>%
+  kableExtra::column_spec(3, "2in")
+```
+
 
 # Matriz de Confusão
 
+.pull-left[
+```{r, echo = FALSE}
+cm 
+```
+
+<br/>
+
+```{r, echo = FALSE}
+cm_num
+```
+]
+
+.pull-right[
+
+$$
+\begin{array}{lcc}
+\mbox{accuracy}  & = & \frac{TP + TN}{TP + TN + FP + FN}\\\\
+&   & \\\\
+\mbox{precision} & = & \frac{TP}{TP + FP}\\\\
+&   & \\\\
+\mbox{recall}    & = & \frac{TP}{TP + FN} \\\\
+&   & \\\\
+\mbox{F1 score}       & =& \frac{2}{1/\mbox{precision} + 1/\mbox{recall}}\\\\
+\end{array}
+$$
+
+]
 
 ---
+
+# Nota de Corte (Threshold)
+
+.pull-left[
+
+```{r, echo=FALSE}
+confusion_matrix_kable(threshold = 0.1, font_size = 16)
+confusion_matrix_kable(threshold = 0.25, font_size = 16)
+confusion_matrix_kable(threshold = 0.5, font_size = 16)
+```
+
+]
+
+.pull-right[
+
+```{r, echo=FALSE}
+confusion_matrix_kable(threshold = 0.75, font_size = 16)
+confusion_matrix_kable(threshold = 0.9, font_size = 16)
+```
+
+]
+
+
+---
+
 
 # Curva ROC
 
+.pull-left[
+```{r, echo = FALSE}
+roc_df <- email_tratado %>%
+  mutate(`classe observada` = as.factor(`classe observada`)) %>%
+  yardstick::roc_curve(`classe observada`, `prob`) 
+
+roc_df_points <- roc_df %>%
+  filter(.threshold %in% c(0.1, 0.25, 0.5, 0.75, 0.9))
+
+roc_curve <- roc_df %>%
+  ggplot(aes(x = 1 - specificity, y = sensitivity)) +
+  geom_path(size = 2) +
+  geom_point(data = roc_df_points, size = 7, colour = "red", shape = 21) +
+  geom_point(data = roc_df_points, size = 5, colour = "red") +
+  geom_abline(lty = "dashed", size = 1) +
+  coord_equal() +
+  theme_minimal(28) +
+  labs(x = "False Positive Rate (FPR)", y = "True Positive Rate (TPR)")
+
+roc_curve
+```
+
+]
+
+.pull-right[
+
+<br/>
+
+```{r, echo = FALSE}
+cm
+```
+
+
+$$
+\begin{array}{lcc}
+\mbox{TPR}    & = & \frac{TP}{TP + FN} \\\\
+&   & \\\\
+\mbox{FPR}    & = & \frac{FP}{FP + TN}
+\end{array}
+$$
+
+]
+
+
+.footnote[
+[An introduction to ROC analysis](https://people.inf.elte.hu/kiss/11dwhdm/roc.pdf)
+]
+
 ---
 
-# Outras Métricas
+# Curva ROC - Métrica AUC
 
-## F1
+.pull-left[
 
+```{r, echo = FALSE}
 
+auc <- email_tratado %>%
+  mutate(`classe observada` = as.factor(`classe observada`)) %>%
+  yardstick::roc_auc(`classe observada`, `prob`) 
 
+roc_curve +
+  stat_smooth(
+        geom = 'area', method = 'loess', span = 1/3,
+        alpha = 0.3, fill = "royalblue") +
+  geom_label(x = 0.5, y = 0.25, label = paste("AUC = ", scales::percent(auc$.estimate)), hjust = 0, fill = "transparent", size = 7)
+```
 
+]
+
+.pull-right[
+
+<br/>
+
+```{r, echo = FALSE}
+cm
+```
+
+$$
+\mbox{AUC} = \mbox{Area Under The ROC Curve}
+$$
+]
+
+**PS:** AUC varia de 0.5 a 1.0. O que significa se AUC for zero?
+
+.footnote[
+[An introduction to ROC analysis](https://people.inf.elte.hu/kiss/11dwhdm/roc.pdf)
+]

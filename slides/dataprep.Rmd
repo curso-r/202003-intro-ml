@@ -1,0 +1,53 @@
+---
+title: "Introdução ao Machine Learning com R"
+subtitle: "Dataprep e Workflows"
+author: "<img src = 'https://d33wubrfki0l68.cloudfront.net/9b0699f18268059bdd2e5c21538a29eade7cbd2b/67e5c/img/logo/cursor1-5.png' width = '40%'>"
+date: "`r Sys.Date()`"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    css: ["default", "default-fonts", "custom.css", "curso-r-bg.css"]
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+---
+
+```{r setup, include=FALSE}
+library(ggplot2)
+library(magrittr)
+library(knitr)
+library(kableExtra)
+library(tidyverse)
+library(plot3D)
+library(ISLR)
+theme_set(theme_minimal(14))
+options(htmltools.dir.version = FALSE)
+```
+
+
+# Conteúdo
+
+- recipes
+- Principais problemas na variável resposta
+- Principais problemas nas features
+    - features categóricas
+        - encoding
+        - transformar em número se ordinal
+    - multicolinearidade
+    - constante
+    - alta cardinalidade (muitas categorias)
+    - escala
+    - assimetria
+    - valores faltantes
+    - valores novos
+- workflow
+- var importance
+- Seleção de variáveis
+- Criação de atributos (feature engineering)
+
+---
+
+# Features Categóricas
+

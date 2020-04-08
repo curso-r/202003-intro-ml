@@ -32,9 +32,13 @@ options(htmltools.dir.version = FALSE, fig.retina = 2)
 
 - Árvores de decisão
 
+- Relação Viés-Variância
+
 - Random Forest
 
-- Gradient Boost/XGboost
+- Gradient Boost
+
+- XGboost
 
 ---
 
@@ -266,7 +270,59 @@ Fonte: [spark.apache.org/docs/1.3.0/mllib-decision-tree.html]()
 
 # Árvore de Decisão - Cost Complexity 
 
+.pull-left[
 
+$$
+R_{cp} = R(T) + cp*|T|
+$$
+
+- Quanto maior o CP, menos quebras a árvore vai ter.
+
+- Selecionamos o tamanho de árvore ideal variando o CP (por meio de cross-validation).
+
+- Sugere-se progressão geométrica da grade de valores. 
+
+  Exemplo: $10^{-5}, 10^{-4}, 10^{-3}, 10^{-2}, 10^{-1}$ 
+  
+  (o `tune()` já está programado para isso).
+
+
+]
+
+.pull-right[
+
+
+```{r, echo=FALSE, warning=FALSE, fig.height=9, cache=TRUE}
+dados <- tibble(
+  x = runif(1300),
+  y = -10*x + 12.5*x^2 + rnorm(1300)
+)
+set.seed(1)
+modelo <- decision_tree(cost_complexity = tune(), tree_depth = 16, min_n = 20) %>%
+  set_engine("rpart") %>% 
+  set_mode("regression")
+
+params <- parameters(modelo) %>%
+  update(cost_complexity = cost_complexity(c(-3.5, -1))) %>%
+  grid_regular(levels = 20)
+
+ajuste <- tune_grid(
+  y ~ x, 
+  modelo, 
+  resamples = vfold_cv(dados, 5),
+  grid = params
+)
+
+collect_metrics(ajuste) %>%
+  ggplot(aes(x = cost_complexity, y = mean)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = mean - std_err, ymax = mean + std_err)) +
+  facet_wrap(~.metric, scales = "free") +
+  scale_x_log10()
+```
+
+
+]
 
 ---
 
@@ -298,23 +354,21 @@ class: inverse, center, middle
 
 # Random Forest
 
-
 ---
 
 # Relação Viés-Variância (Bias-variance tradeoff)
 
 .pull-left[
 
-$$
-\mbox{E}[(Y - \hat{f}(x_o))^2]  =\\\\
+#### Erro de Predição Esperado
 
-\mbox{E}[(f(x_o) +\epsilon - \hat{f}(x_o))^2] = \\\\
+$$\color{#AB2729}{\mbox{}\mbox{E} [(Y - \hat{f}(x_o))^2]}  = \\ \\ \color{#AB2729}{\mbox{E}[(f(x_o) +\epsilon - \hat{f}(x_o))^2]} = \\\\ \color{#7CD5D5}{(\mbox{E}\hat{f}(x_o) - f(x_o))^2} + \color{#F49135}{\mbox{E}[(\hat{f}(x_o) - \mbox{E}\hat{f}(x_o))^2]} + \color{LimeGreen}{Var(\epsilon)}  = \\\\ \color{#7CD5D5}{Viés^2} + \color{#F49135}{Variância} + \color{LimeGreen}{Erro\ Irredutível}$$
 
-(\mbox{E}\hat{f}(x_o) - f(x_o))^2 + \mbox{E}[(\hat{f}(x_o) - \mbox{E}\hat{f}(x_o))^2] + Var(\epsilon)  = \\
+<br/> 
 
-Viés^2 + Variância + Erro\ Irredutível
+<img src="img/vies_variancia3.png" style="width: 90%;"/>
 
-$$
+
 
 ]
 
@@ -336,16 +390,15 @@ Ver [ISL](https://www.ime.unicamp.br/~dias/Intoduction%20to%20Statistical%20Lear
 
 .pull-left[
 
-$$
-\mbox{E}[(Y - \hat{f}(x_o))^2]  =\\\\
+#### Erro de Predição Esperado
 
-\mbox{E}[(f(x_o) +\epsilon - \hat{f}(x_o))^2] = \\\\
+$$\color{#AB2729}{\mbox{}\mbox{E} [(Y - \hat{f}(x_o))^2]}  = \\ \\ \color{#AB2729}{\mbox{E}[(f(x_o) +\epsilon - \hat{f}(x_o))^2]} = \\\\ \color{#7CD5D5}{(\mbox{E}\hat{f}(x_o) - f(x_o))^2} + \color{#F49135}{\mbox{E}[(\hat{f}(x_o) - \mbox{E}\hat{f}(x_o))^2]} + \color{LimeGreen}{Var(\epsilon)}  = \\\\ \color{#7CD5D5}{Viés^2} + \color{#F49135}{Variância} + \color{LimeGreen}{Erro\ Irredutível}$$
 
-(\mbox{E}\hat{f}(x_o) - f(x_o))^2 + \mbox{E}[(\hat{f}(x_o) - \mbox{E}\hat{f}(x_o))^2] + Var(\epsilon)  = \\
+<br/> 
 
-Viés^2 + Variância + Erro\ Irredutível
+<img src="img/vies_variancia3.png" style="width: 90%;"/>
 
-$$
+
 
 ]
 
@@ -481,4 +534,297 @@ class: inverse, middle, center
 ---
 
 #XGBoost
+
+.pull-left[
+
+- XGBoost é uma implementação melhorada do Gradient Boost.
+
+- O XGBoost traz de volta reamostragem e hiperparâmetros de regularização.
+
+- Top 2 de Algoritmos que mais ganharam Kaggle.
+
+]
+
+.pull-right[
+
+<img src="img/xgb_obj.png" style="width: 100%;"/>
+]
+
+.pull-left[
+
+
+**min_n** – Qtd mínima de observações no nó para poder dividir.
+
+**mtry** – Quantidade de variáveis sorteadas por árvore. Tem que testar via CV, pois é afetado pela razão entre variáveis boas e ruído.
+
+**trees** – Número de árvores (de passos).
+
+
+]
+
+.pull-right-abaixo[
+
+**tree_depth** – Profundidade máxima da árvore.
+
+**learn_rate** – Tamanho do "passo". Quanto menor, mais devagar. PS: Aumentar o número de árvores junto!
+
+**loss_reduction** – Parâmetro regularizador. Análogo ao CP do `rpart`.
+
+**sample_size** – Proporção de linhas para sortear por árvore.
+
+]
+
+
+.footnote[
+Ver [Introduction to Boosted Trees](https://xgboost.readthedocs.io/en/latest/tutorials/model.html) do XGboost.io.
+]
+
+
+---
+
+#XGboost - Intuição dos hiperparâmetros
+
+
+
+<img src="img/xgboost_tuned_vs_untuned.gif" style="width: 100%;"/>
+
+
+
+---
+
+#XGboost - Intuição dos hiperparâmetros
+
+.pull-left[
+```{r}
+modelo <- boost_tree(
+  mtry = 1, 
+  trees = 100, 
+  min_n = 1, 
+  tree_depth = 1, 
+  learn_rate = 1,
+  sample_size = 1, 
+  loss_reduction = 1
+)
+```
+]
+
+.pull-right[
+
+
+<img src="img/xgb_trees100@min_n1@tree_depth1@learn_rate1@sample_size1@loss_reduction1.gif" style="width: 75%;"/>
+
+
+]
+
+.pull-left[
+
+```{r}
+modelo <- boost_tree(
+  mtry = 1, 
+  trees = 100, 
+  min_n = 1, 
+  tree_depth = 2, #<<
+  learn_rate = 1,
+  sample_size = 1, 
+  loss_reduction = 1
+)
+```
+
+]
+
+.pull-right-abaixo[
+
+<img src="img/xgb_trees100@min_n1@tree_depth2@learn_rate1@sample_size1@loss_reduction1.gif" style="width: 75%;"/>
+
+]
+
+---
+
+#XGboost - Intuição dos hiperparâmetros
+
+.pull-left[
+```{r}
+modelo <- boost_tree(
+  mtry = 1, 
+  trees = 100, 
+  min_n = 1, 
+  tree_depth = 1, 
+  learn_rate = 0.1, #<<
+  sample_size = 1, 
+  loss_reduction = 1
+)
+```
+]
+
+.pull-right[
+
+
+<img src="img/xgb_trees100@min_n1@tree_depth1@learn_rate0.1@sample_size1@loss_reduction1.gif" style="width: 75%;"/>
+
+
+]
+
+.pull-left[
+
+```{r}
+modelo <- boost_tree(
+  mtry = 1, 
+  trees = 100, 
+  min_n = 1, 
+  tree_depth = 1, 
+  learn_rate = 1,
+  sample_size = 0.5, #<<
+  loss_reduction = 1
+)
+```
+
+]
+
+.pull-right-abaixo[
+
+<img src="img/xgb_trees100@min_n1@tree_depth1@learn_rate1@sample_size0.5@loss_reduction1.gif" style="width: 75%;"/>
+
+]
+
+
+---
+
+#XGboost - Intuição dos hiperparâmetros
+
+.pull-left[
+```{r}
+modelo <- boost_tree(
+  mtry = 1, 
+  trees = 100, 
+  min_n = 1, 
+  tree_depth = 1, 
+  learn_rate = 1, 
+  sample_size = 1, 
+  loss_reduction = 0.1 #<<
+)
+```
+]
+
+.pull-right[
+
+
+<img src="img/xgb_trees100@min_n1@tree_depth1@learn_rate1@sample_size1@loss_reduction0.1.gif" style="width: 75%;"/>
+
+
+]
+
+.pull-left[
+
+```{r}
+modelo <- boost_tree(
+  mtry = 1, 
+  trees = 100, 
+  min_n = 1,  
+  tree_depth = 2, #<<
+  learn_rate = 0.1, #<<
+  sample_size = 0.5, #<<
+  loss_reduction = 0.1 #<<
+)
+```
+
+]
+
+.pull-right-abaixo[
+
+<img src="img/xgb_trees100@min_n1@tree_depth2@learn_rate0.1@sample_size0.5@loss_reduction0.1.gif" style="width: 75%;"/>
+
+]
+
+
+---
+
+# Extrapolação dos modelos de árvores
+
+```{r, echo=FALSE, fig.asp=0.5, fig.width=14}
+set.seed(1)
+dados <- tibble(
+  x = runif(200) - 0.5,
+  y = sin(x * pi * 2) + rnorm(200, sd = 0.3)
+)
+
+modelo <- boost_tree(
+  mode = "regression", 
+  mtry = 1, 
+  trees = 250, 
+  min_n = 2, 
+  tree_depth = 5, 
+  learn_rate = 0.1, 
+  sample_size = 0.9, 
+  loss_reduction = 0.9
+) %>%
+  set_engine("xgboost", base_score = 0)
+
+ajuste <- fit(modelo, y ~ x, data = dados)
+
+dados_xgb <- dados %>% select(x) %>% as.matrix()
+
+
+dados_extr <- tibble(x = seq(-1, 1, length.out = 1000)) 
+dados_xgb_extr <- dados_extr %>% select(x) %>% as.matrix()
+dados_extr <- dados_extr %>%
+  mutate(
+    pred = xgboost:::predict.xgb.Booster(ajuste$fit, newdata = dados_xgb_extr, ntreelimit = 0)
+  )
+
+dados %>%
+  mutate(
+    pred = xgboost:::predict.xgb.Booster(ajuste$fit, newdata = dados_xgb, ntreelimit = 0)
+  ) %>%
+  ggplot(aes(x = x)) +
+  geom_point(aes(y = y), size = 2, alpha = 0.4) +
+  stat_function(fun = ~sin(. * pi * 2), colour = "purple", size = 1.5) +
+  geom_step(aes(y = pred), colour = "orange", size = 2) +
+  geom_step(aes(y = pred), colour = "orange", size = 2, linetype = "dashed", data = dados_extr) +
+  theme_minimal(30)
+```
+
+
+---
+
+# No R
+
+.pull-left[
+
+```{r, eval=FALSE}
+# árvore de decisão
+modelo_tree <- decision_tree(
+  min_n = tune(),
+  tree_depth = tune(),
+  cost_complexity = tune() 
+)
+```
+
+```{r, eval=FALSE}
+# Random Forest
+modelo_rf <- rand_forest(
+  min_n = tune(),
+  mtry = tune(),
+  trees = tune()
+)
+```
+
+]
+
+.pull-right[
+
+
+```{r, eval=FALSE}
+# XGBoost
+modelo_xgb <- boost_tree(
+  min_n = tune(),
+  mtry = tune(),
+  trees = tune(),
+  tree_depth = tune(),
+  learn_rate = tune(),
+  loss_reduction = tune(),
+  sample_size = tune() 
+)
+```
+
+]
 

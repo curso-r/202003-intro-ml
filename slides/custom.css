@@ -96,3 +96,8 @@ div.willy {
   padding-right: 4em;
   font-size: 80%;
 }
+.pull-right-abaixo{
+  clear: none;
+  float: right;
+  width: 47%;
+}

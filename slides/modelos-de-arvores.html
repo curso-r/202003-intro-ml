@@ -4,7 +4,7 @@
     <title>Introdução ao Machine Learning com R</title>
     <meta charset="utf-8" />
     <meta name="author" content="" />
-    <meta name="date" content="2020-04-07" />
+    <meta name="date" content="2020-04-08" />
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
     <link rel="stylesheet" href="custom.css" type="text/css" />
@@ -17,7 +17,7 @@ class: center, middle, inverse, title-slide
 # Introdução ao Machine Learning com R
 ## Modelos de Árvores
 ### <img src = 'https://d33wubrfki0l68.cloudfront.net/9b0699f18268059bdd2e5c21538a29eade7cbd2b/67e5c/img/logo/cursor1-5.png' width = '40%'>
-### 2020-04-07
+### 2020-04-08
 
 ---
 
@@ -29,9 +29,13 @@ class: center, middle, inverse, title-slide
 
 - Árvores de decisão
 
+- Relação Viés-Variância
+
 - Random Forest
 
-- Gradient Boost/XGboost
+- Gradient Boost
+
+- XGboost
 
 ---
 
@@ -266,7 +270,28 @@ Fonte: [spark.apache.org/docs/1.3.0/mllib-decision-tree.html]()
 
 # Árvore de Decisão - Cost Complexity 
 
+.pull-left[
 
+$$
+R_{cp} = R(T) + cp*|T|
+$$
+
+- Quanto maior o CP, menos quebras a árvore vai ter.
+
+- Selecionamos o tamanho de árvore ideal variando o CP (por meio de cross-validation).
+
+- Sugere-se progressão geométrica da grade de valores. Exemplo: `\(10^{-5}, 10^{-4}, 10^{-3}, 10^{-2}, 10^{-1}\)` (o `tune()` já está programado para isso).
+
+
+]
+
+.pull-right[
+
+
+![](modelos-de-arvores_files/figure-html/unnamed-chunk-4-1.png)&lt;!-- --&gt;
+
+
+]
 
 ---
 
@@ -298,23 +323,21 @@ class: inverse, center, middle
 
 # Random Forest
 
-
 ---
 
 # Relação Viés-Variância (Bias-variance tradeoff)
 
 .pull-left[
 
-$$
-\mbox{E}[(Y - \hat{f}(x_o))^2]  =\\\\
+#### Erro de Predição Esperado
 
-\mbox{E}[(f(x_o) +\epsilon - \hat{f}(x_o))^2] = \\\\
+`$$\color{#AB2729}{\mbox{}\mbox{E} [(Y - \hat{f}(x_o))^2]}  = \\ \\ \color{#AB2729}{\mbox{E}[(f(x_o) +\epsilon - \hat{f}(x_o))^2]} = \\\\ \color{#7CD5D5}{(\mbox{E}\hat{f}(x_o) - f(x_o))^2} + \color{#F49135}{\mbox{E}[(\hat{f}(x_o) - \mbox{E}\hat{f}(x_o))^2]} + \color{LimeGreen}{Var(\epsilon)}  = \\\\ \color{#7CD5D5}{Viés^2} + \color{#F49135}{Variância} + \color{LimeGreen}{Erro\ Irredutível}$$`
 
-(\mbox{E}\hat{f}(x_o) - f(x_o))^2 + \mbox{E}[(\hat{f}(x_o) - \mbox{E}\hat{f}(x_o))^2] + Var(\epsilon)  = \\
+&lt;br/&gt; 
 
-Viés^2 + Variância + Erro\ Irredutível
+&lt;img src="img/vies_variancia3.png" style="width: 90%;"/&gt;
 
-$$
+
 
 ]
 
@@ -336,16 +359,15 @@ Ver [ISL](https://www.ime.unicamp.br/~dias/Intoduction%20to%20Statistical%20Lear
 
 .pull-left[
 
-$$
-\mbox{E}[(Y - \hat{f}(x_o))^2]  =\\\\
+#### Erro de Predição Esperado
 
-\mbox{E}[(f(x_o) +\epsilon - \hat{f}(x_o))^2] = \\\\
+`$$\color{#AB2729}{\mbox{}\mbox{E} [(Y - \hat{f}(x_o))^2]}  = \\ \\ \color{#AB2729}{\mbox{E}[(f(x_o) +\epsilon - \hat{f}(x_o))^2]} = \\\\ \color{#7CD5D5}{(\mbox{E}\hat{f}(x_o) - f(x_o))^2} + \color{#F49135}{\mbox{E}[(\hat{f}(x_o) - \mbox{E}\hat{f}(x_o))^2]} + \color{LimeGreen}{Var(\epsilon)}  = \\\\ \color{#7CD5D5}{Viés^2} + \color{#F49135}{Variância} + \color{LimeGreen}{Erro\ Irredutível}$$`
 
-(\mbox{E}\hat{f}(x_o) - f(x_o))^2 + \mbox{E}[(\hat{f}(x_o) - \mbox{E}\hat{f}(x_o))^2] + Var(\epsilon)  = \\
+&lt;br/&gt; 
 
-Viés^2 + Variância + Erro\ Irredutível
+&lt;img src="img/vies_variancia3.png" style="width: 90%;"/&gt;
 
-$$
+
 
 ]
 
@@ -470,6 +492,277 @@ Ver [ESL](https://web.stanford.edu/~hastie/Papers/ESLII.pdf) página 341 (Gradie
 
 .footnote[
 Ver [ESL](https://web.stanford.edu/~hastie/Papers/ESLII.pdf) página 341 (Gradient Boosting).
+]
+
+---
+
+class: inverse, middle, center
+
+# XGBoost
+
+---
+
+#XGBoost
+
+.pull-left[
+
+- XGBoost é uma implementação melhorada do Gradient Boost.
+
+- O XGBoost traz de volta reamostragem e hiperparâmetros de regularização.
+
+- Top 2 de Algoritmos que mais ganharam Kaggle.
+
+]
+
+.pull-right[
+
+&lt;img src="img/xgb_obj.png" style="width: 100%;"/&gt;
+]
+
+.pull-left[
+
+
+**min_n** – Qtd mínima de observações no nó para poder dividir.
+
+**mtry** – Quantidade de variáveis sorteadas por árvore. Tem que testar via CV, pois é afetado pela razão entre variáveis boas e ruído.
+
+**trees** – Número de árvores (de passos).
+
+
+]
+
+.pull-right-abaixo[
+
+**tree_depth** – Profundidade máxima da árvore.
+
+**learn_rate** – Tamanho do "passo". Quanto menor, mais devagar. PS: Aumentar o número de árvores junto!
+
+**loss_reduction** – Parâmetro regularizador. Análogo ao CP do `rpart`.
+
+**sample_size** – Proporção de linhas para sortear por árvore.
+
+]
+
+
+.footnote[
+Ver [Introduction to Boosted Trees](https://xgboost.readthedocs.io/en/latest/tutorials/model.html) do XGboost.io.
+]
+
+
+---
+
+#XGboost - Intuição dos hiperparâmetros
+
+
+
+&lt;img src="img/xgboost_tuned_vs_untuned.gif" style="width: 100%;"/&gt;
+
+
+
+---
+
+#XGboost - Intuição dos hiperparâmetros
+
+.pull-left[
+
+```r
+modelo &lt;- boost_tree(
+  mtry = 1, 
+  trees = 100, 
+  min_n = 1, 
+  tree_depth = 1, 
+  learn_rate = 1,
+  sample_size = 1, 
+  loss_reduction = 1
+)
+```
+]
+
+.pull-right[
+
+
+&lt;img src="img/xgb_trees100@min_n1@tree_depth1@learn_rate1@sample_size1@loss_reduction1.gif" style="width: 75%;"/&gt;
+
+
+]
+
+.pull-left[
+
+
+```r
+modelo &lt;- boost_tree(
+  mtry = 1, 
+  trees = 100, 
+  min_n = 1, 
+* tree_depth = 2,
+  learn_rate = 1,
+  sample_size = 1, 
+  loss_reduction = 1
+)
+```
+
+]
+
+.pull-right-abaixo[
+
+&lt;img src="img/xgb_trees100@min_n1@tree_depth2@learn_rate1@sample_size1@loss_reduction1.gif" style="width: 75%;"/&gt;
+
+]
+
+---
+
+#XGboost - Intuição dos hiperparâmetros
+
+.pull-left[
+
+```r
+modelo &lt;- boost_tree(
+  mtry = 1, 
+  trees = 100, 
+  min_n = 1, 
+  tree_depth = 1, 
+* learn_rate = 0.1,
+  sample_size = 1, 
+  loss_reduction = 1
+)
+```
+]
+
+.pull-right[
+
+
+&lt;img src="img/xgb_trees100@min_n1@tree_depth1@learn_rate0.1@sample_size1@loss_reduction1.gif" style="width: 75%;"/&gt;
+
+
+]
+
+.pull-left[
+
+
+```r
+modelo &lt;- boost_tree(
+  mtry = 1, 
+  trees = 100, 
+  min_n = 1, 
+  tree_depth = 1, 
+  learn_rate = 1,
+* sample_size = 0.5,
+  loss_reduction = 1
+)
+```
+
+]
+
+.pull-right-abaixo[
+
+&lt;img src="img/xgb_trees100@min_n1@tree_depth1@learn_rate1@sample_size0.5@loss_reduction1.gif" style="width: 75%;"/&gt;
+
+]
+
+
+---
+
+#XGboost - Intuição dos hiperparâmetros
+
+.pull-left[
+
+```r
+modelo &lt;- boost_tree(
+  mtry = 1, 
+  trees = 100, 
+  min_n = 1, 
+  tree_depth = 1, 
+  learn_rate = 1, 
+  sample_size = 1, 
+* loss_reduction = 0.1
+)
+```
+]
+
+.pull-right[
+
+
+&lt;img src="img/xgb_trees100@min_n1@tree_depth1@learn_rate1@sample_size1@loss_reduction0.1.gif" style="width: 75%;"/&gt;
+
+
+]
+
+.pull-left[
+
+
+```r
+modelo &lt;- boost_tree(
+  mtry = 1, 
+  trees = 100, 
+  min_n = 1,  
+* tree_depth = 2,
+* learn_rate = 0.1,
+* sample_size = 0.5,
+* loss_reduction = 0.1
+)
+```
+
+]
+
+.pull-right-abaixo[
+
+&lt;img src="img/xgb_trees100@min_n1@tree_depth2@learn_rate0.1@sample_size0.5@loss_reduction0.1.gif" style="width: 75%;"/&gt;
+
+]
+
+
+---
+
+# Extrapolação dos modelos de árvores
+
+![](modelos-de-arvores_files/figure-html/unnamed-chunk-11-1.png)&lt;!-- --&gt;
+
+
+---
+
+# No R
+
+.pull-left[
+
+
+```r
+# árvore de decisão
+modelo_tree &lt;- decision_tree(
+  min_n = tune(),
+  tree_depth = tune(),
+  cost_complexity = tune() 
+)
+```
+
+
+```r
+# Random Forest
+modelo_rf &lt;- rand_forest(
+  min_n = tune(),
+  mtry = tune(),
+  trees = tune()
+)
+```
+
+]
+
+.pull-right[
+
+
+
+```r
+# XGBoost
+modelo_xgb &lt;- boost_tree(
+  min_n = tune(),
+  mtry = tune(),
+  trees = tune(),
+  tree_depth = tune(),
+  learn_rate = tune(),
+  loss_reduction = tune(),
+  sample_size = tune() 
+)
+```
+
 ]
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>

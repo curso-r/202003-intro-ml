@@ -385,8 +385,30 @@ Ver [ISL](https://www.ime.unicamp.br/~dias/Intoduction%20to%20Statistical%20Lear
 
 ---
 
-# Regressão Logística - Custo e Regularização
+# Regressão Logística
 
+```{r,echo = FALSE, fig.height=6, fig.width=10, warning=FALSE, message=FALSE}
+email %>%
+  select(-`Regressão Linear`) %>%
+  # sample_n(100) %>%
+  gather("modelo", "pred", starts_with("Reg")) %>%
+  ggplot(aes(x = pts_exclamacao, y = spam)) + 
+  geom_point(size = 5, alpha = 0.2)  +
+  geom_line(size = 3, aes(y = pred, colour = modelo), show.legend = FALSE) +
+  stat_summary_bin(size = 1, alpha = 0.7, colour = "purple", aes(x = pts_exclamacao))  +
+  facet_wrap(~ modelo) +
+  theme_minimal(20)+
+  labs(
+    title = "Y = 1: E-mail é Spam", x = "Qtd de pontos de exclamação"
+  ) +
+  scale_y_continuous(breaks = c(0, 1), labels = c("Y = 0", "Y = 1")) +
+  theme(axis.title.y = element_blank())
+```
+
+
+---
+
+# Regressão Logística - Custo e Regularização
 A **função de custo** da Regressão Logística chama-se *log-loss* (ou  *deviance* ou *Binary Cross-Entropy*):
 
 $$D = \frac{1}{N}\sum[y_i \log\hat{y_i} + (1 - y_i )\log(1 - \hat{y_i})]$$
@@ -520,6 +542,10 @@ $$
 \mbox{recall}    & = & \frac{TP}{TP + FN} \\\\
 &   & \\\\
 \mbox{F1 score}       & =& \frac{2}{1/\mbox{precision} + 1/\mbox{recall}}\\\\
+&   & \\\\
+\mbox{TPR}    & = & \frac{TP}{TP + FN} \\\\
+&   & \\\\
+\mbox{FPR}    & = & \frac{FP}{FP + TN}
 \end{array}
 $$
 

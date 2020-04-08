@@ -328,8 +328,14 @@ Ver [ISL](https://www.ime.unicamp.br/~dias/Intoduction%20to%20Statistical%20Lear
 
 ---
 
-# Regressão Logística - Custo e Regularização
+# Regressão Logística
 
+![](cross-validation-e-modelos-lineares_files/figure-html/unnamed-chunk-9-1.png)&lt;!-- --&gt;
+
+
+---
+
+# Regressão Logística - Custo e Regularização
 A **função de custo** da Regressão Logística chama-se *log-loss* (ou  *deviance* ou *Binary Cross-Entropy*):
 
 `$$D = \frac{1}{N}\sum[y_i \log\hat{y_i} + (1 - y_i )\log(1 - \hat{y_i})]$$`
@@ -406,7 +412,7 @@ O "produto final" será um vetor de probabilidades estimadas.
 
 .pull-right[
 
-![](cross-validation-e-modelos-lineares_files/figure-html/unnamed-chunk-10-1.png)&lt;!-- --&gt;
+![](cross-validation-e-modelos-lineares_files/figure-html/unnamed-chunk-11-1.png)&lt;!-- --&gt;
 
 
 ]
@@ -486,6 +492,10 @@ $$
 \mbox{recall}    &amp; = &amp; \frac{TP}{TP + FN} \\\\
 &amp;   &amp; \\\\
 \mbox{F1 score}       &amp; =&amp; \frac{2}{1/\mbox{precision} + 1/\mbox{recall}}\\\\
+&amp;   &amp; \\\\
+\mbox{TPR}    &amp; = &amp; \frac{TP}{TP + FN} \\\\
+&amp;   &amp; \\\\
+\mbox{FPR}    &amp; = &amp; \frac{FP}{FP + TN}
 \end{array}`
 $$
 
@@ -640,7 +650,7 @@ $$
 # Curva ROC
 
 .pull-left[
-![](cross-validation-e-modelos-lineares_files/figure-html/unnamed-chunk-16-1.png)&lt;!-- --&gt;
+![](cross-validation-e-modelos-lineares_files/figure-html/unnamed-chunk-17-1.png)&lt;!-- --&gt;
 
 ]
 
@@ -696,7 +706,7 @@ $$
 
 .pull-left[
 
-![](cross-validation-e-modelos-lineares_files/figure-html/unnamed-chunk-18-1.png)&lt;!-- --&gt;
+![](cross-validation-e-modelos-lineares_files/figure-html/unnamed-chunk-19-1.png)&lt;!-- --&gt;
 
 ]
 

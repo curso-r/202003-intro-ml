@@ -292,7 +292,7 @@ $$
 .pull-right[
 
 
-```{r, echo=FALSE, warning=FALSE, fig.height=9, cache=TRUE}
+```{r, echo=FALSE, warning=FALSE, fig.height=6, cache=TRUE}
 dados <- tibble(
   x = runif(1300),
   y = -10*x + 12.5*x^2 + rnorm(1300)
@@ -362,11 +362,11 @@ class: inverse, center, middle
 
 #### Erro de Predição Esperado
 
-$$\color{#AB2729}{\mbox{}\mbox{E} [(Y - \hat{f}(x_o))^2]}  = \\ \\ \color{#AB2729}{\mbox{E}[(f(x_o) +\epsilon - \hat{f}(x_o))^2]} = \\\\ \color{#7CD5D5}{(\mbox{E}\hat{f}(x_o) - f(x_o))^2} + \color{#F49135}{\mbox{E}[(\hat{f}(x_o) - \mbox{E}\hat{f}(x_o))^2]} + \color{LimeGreen}{Var(\epsilon)}  = \\\\ \color{#7CD5D5}{Viés^2} + \color{#F49135}{Variância} + \color{LimeGreen}{Erro\ Irredutível}$$
+$$\small\color{#AB2729}{\mbox{}\mbox{E} [(Y - \hat{f}(x_o))^2]}  = \\ \\ \small\color{#AB2729}{\mbox{E}[(f(x_o) +\epsilon - \hat{f}(x_o))^2]} = \\\\ \small\color{#7CD5D5}{(\mbox{E}\hat{f}(x_o) - f(x_o))^2} + \color{#F49135}{\mbox{E}[(\hat{f}(x_o) - \mbox{E}\hat{f}(x_o))^2]} + \color{LimeGreen}{Var(\epsilon)}  = \\\\\small \color{#7CD5D5}{Viés^2} + \color{#F49135}{Variância} + \color{LimeGreen}{Erro\ Irredutível}$$
 
 <br/> 
 
-<img src="img/vies_variancia3.png" style="width: 90%;"/>
+<img src="img/vies_variancia3.png" style="width: 100%;"/>
 
 
 
@@ -392,11 +392,11 @@ Ver [ISL](https://www.ime.unicamp.br/~dias/Intoduction%20to%20Statistical%20Lear
 
 #### Erro de Predição Esperado
 
-$$\color{#AB2729}{\mbox{}\mbox{E} [(Y - \hat{f}(x_o))^2]}  = \\ \\ \color{#AB2729}{\mbox{E}[(f(x_o) +\epsilon - \hat{f}(x_o))^2]} = \\\\ \color{#7CD5D5}{(\mbox{E}\hat{f}(x_o) - f(x_o))^2} + \color{#F49135}{\mbox{E}[(\hat{f}(x_o) - \mbox{E}\hat{f}(x_o))^2]} + \color{LimeGreen}{Var(\epsilon)}  = \\\\ \color{#7CD5D5}{Viés^2} + \color{#F49135}{Variância} + \color{LimeGreen}{Erro\ Irredutível}$$
+$$\small\color{#AB2729}{\mbox{}\mbox{E} [(Y - \hat{f}(x_o))^2]}  = \\ \\ \small\color{#AB2729}{\mbox{E}[(f(x_o) +\epsilon - \hat{f}(x_o))^2]} = \\\\ \small\color{#7CD5D5}{(\mbox{E}\hat{f}(x_o) - f(x_o))^2} + \color{#F49135}{\mbox{E}[(\hat{f}(x_o) - \mbox{E}\hat{f}(x_o))^2]} + \color{LimeGreen}{Var(\epsilon)}  = \\\\\small \color{#7CD5D5}{Viés^2} + \color{#F49135}{Variância} + \color{LimeGreen}{Erro\ Irredutível}$$
 
 <br/> 
 
-<img src="img/vies_variancia3.png" style="width: 90%;"/>
+<img src="img/vies_variancia3.png" style="width: 100%;"/>
 
 
 

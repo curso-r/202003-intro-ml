@@ -5,27 +5,39 @@
 
 # BONUS: foi colocada uma etapa de "exploração" dos dados que será pauta da próxima aula. 
 
+# Pacotes ------------------------------------------------------------------
+
+library(tidyverse)
+library(tidymodels)
+library(parsnip)
+library(ISLR)
+library(rsample)
+library(dials)
+library(yardstick)
+library(rpart)
+library(rpart.plot)
+
 #####################################################################################################
 # PASSO 0) CARREGAR AS BASES
 
 # Download dos dados -----------------------------------------------------------------------------
 
 # baixa adult.data se nao existe ainda
-if(!file.exists("data/adult.data")) 
-  httr::GET("http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data", httr::write_disk("data/adult.data"))
+if(!file.exists("dados/adult.data")) 
+  httr::GET("http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data", httr::write_disk("dados/adult.data"))
 
 # baixa adult.test se nao existe ainda
-if(!file.exists("data/adult.test"))
-  httr::GET("http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.test", httr::write_disk("data/adult.test"))
+if(!file.exists("dados/adult.test"))
+  httr::GET("http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.test", httr::write_disk("dados/adult.test"))
 
 # baixa adult.names se nao existe ainda
-if(!file.exists("data/adult.test"))
-  httr::GET("http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.names", httr::write_disk("data/adult.names"))
+if(!file.exists("dados/adult.names"))
+  httr::GET("http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.names", httr::write_disk("dados/adult.names"))
 
 # Carrega dados ---------------------------------------------------------------------------------------
 
 # prepara os nomes das colunas para colocar no cabecalho
-adult_names <- tibble(name = read_lines("data/adult.names")) %>%
+adult_names <- tibble(name = read_lines("dados/adult.names")) %>%
   filter(
     str_detect(name, "^[^\\|].*:")
   ) %>%
@@ -36,8 +48,8 @@ adult_names <- tibble(name = read_lines("data/adult.names")) %>%
   add_row(name = "less_than_50k", description = "person earn more than USD 50K per year.")
 
 # treino/teste 
-adult_train <- read_csv(file = "data/adult.data", na = c("?", "", "NA"), col_names = adult_names$name)
-adult_test  <- read_csv(file = "data/adult.test", na = c("?", "", "NA"), col_names = adult_names$name, skip = 1) %>%
+adult_train <- read_csv(file = "dados/adult.data", na = c("?", "", "NA"), col_names = adult_names$name)
+adult_test  <- read_csv(file = "dados/adult.test", na = c("?", "", "NA"), col_names = adult_names$name, skip = 1) %>%
   mutate(
     less_than_50k = if_else(less_than_50k == "<=50K.", "<=50K", ">50K")
   )
@@ -64,7 +76,6 @@ adult_test  <- read_csv(file = "data/adult.test", na = c("?", "", "NA"), col_nam
 # vis_miss(adult_train)
 # gg_miss_case(adult_train)
 
-
 # NESSA PARTE REMOVE-SE O NA APENAS PARA SEGUIR MAIS SUAVE O EXERCÍCIO, MAS NA PRÓXIMA AULA 
 # IREMOS TRATAR ESSE PROBLEMA DE MANEIRA MAIS ADEQUADA!
 adult_train <- adult_train %>% na.omit()
@@ -73,11 +84,31 @@ adult_test <- adult_test %>% na.omit()
 #####################################################################################################
 # PASSO 4) MODELO
 # Definição de 
-# a) a f(x) (ou do modelo): logistc_reg(), etc..
+# a) a f(x) (ou do modelo): logistc_reg(), etc...
 # b) modo (ou natureza da var resp): classification
-# c) hiperparametros que queremos tunar tune()
-# d) hiperparametros que não queremos tunar
+# c) hiperparametros que queremos tunar: tune()
+# d) hiperparametros que não queremos tunar:
 # e) o motor que queremos usar
+
+adult_tree_model <- decision_tree(cost_complexity = tune()) %>%
+  set_mode("classification") %>%
+  set_engine("rpart")
+
+adult_rf_model <- rand_forest(mtry = tune(), min_n = tune(), trees = 1000) %>%
+  set_mode("classification") %>%
+  set_engine("ranger")
+
+adult_lr_model <- logistic_reg(penalty = tune()) %>%
+  set_mode("classification") %>%
+  set_engine("glmnet")
+
+adult_xgb_model <- boost_tree(
+  mtry = tune(), min_n = tune(), 
+  tree_depth = tune(), 
+  trees = 1500, sample_size = 0.75, 
+  learn_rate = tune(), loss_reduction = tune()) %>%
+  set_mode("classification") %>%
+  set_engine("xgboost")
 
 #####################################################################################################
 # PASSO 5) TUNAGEM DE HIPERPARÂMETROS

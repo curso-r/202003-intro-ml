@@ -1,0 +1,94 @@
+# Tarefa 02 - Classificação com Regressão Logística e Modelos de árvore
+# ANÁLISE DA BASE ADULTS
+
+# OBJETIVO PRINCIPAL: CRIAR UM CÓDIGO QUE GERE 2 OU MAIS TIPOS DE MODELOS (EX: REGRESSÃO LINEAR E RANDOM FOREST)
+
+
+#####################################################################################################
+# PASSO 0) CARREGAR AS BASES
+
+# Download dos dados -----------------------------------------------------------------------------
+
+# baixa adult.data se nao existe ainda
+if(!file.exists("data/adult.data")) 
+  httr::GET("http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data", httr::write_disk("data/adult.data"))
+
+# baixa adult.test se nao existe ainda
+if(!file.exists("data/adult.test"))
+  httr::GET("http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.test", httr::write_disk("data/adult.test"))
+
+# baixa adult.names se nao existe ainda
+if(!file.exists("data/adult.test"))
+  httr::GET("http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.names", httr::write_disk("data/adult.names"))
+
+# Carrega dados ---------------------------------------------------------------------------------------
+
+# prepara os nomes das colunas para colocar no cabecalho
+adult_names <- tibble(name = read_lines("data/adult.names")) %>%
+  filter(
+    str_detect(name, "^[^\\|].*:")
+  ) %>%
+  separate(name, c("name", "description"), sep = ":") %>%
+  mutate(
+    name = snakecase::to_snake_case(name)
+  ) %>%
+  add_row(name = "less_than_50k", description = "person earn more than USD 50K per year.")
+
+# treino/teste 
+adult_train <- read_csv(file = "data/adult.data", na = c("?", "", "NA"), col_names = adult_names$name)
+adult_test  <- read_csv(file = "data/adult.test", na = c("?", "", "NA"), col_names = adult_names$name, skip = 1) %>%
+  mutate(
+    less_than_50k = if_else(less_than_50k == "<=50K.", "<=50K", ">50K")
+  )
+
+#####################################################################################################
+# PASSO 1) BASE TREINO/TESTE
+
+#####################################################################################################
+# PASSO 2) EXPLORAR A BASE
+# PASSO 3) DATAPREP
+
+# map(list(test = adult_test, train = adult_train), introduce) %>% enframe() %>% unnest() %>% t %>% as_tibble() %>% set_names(c("test", "train"))
+# skimr::skim(adult_train)
+# skimr::skim(adult_test)
+# 
+# plot_bar(adult_train)
+# plot_histogram(adult_train)
+# plot_histogram(adult_train %>% mutate_if(is.numeric, log1p))
+# plot_qq(adult_train)
+# plot_qq(adult_train %>% mutate_if(is.numeric, log1p))
+# plot_correlation(na.omit(adult_train), maxcat = 5L)
+# plot_correlation(na.omit(adult_train), type = "d")
+# gg_miss_var(adult_train)
+# vis_miss(adult_train)
+# gg_miss_case(adult_train)
+
+#####################################################################################################
+# PASSO 4) MODELO
+# Definição de 
+# a) a f(x) (ou do modelo): logistc_reg()
+# b) modo (ou natureza da var resp): classification
+# c) hiperparametros que queremos tunar: penalty = tune()
+# d) hiperparametros que não queremos tunar: mixture = 0
+# e) o motor que queremos usar: glmnet
+
+#####################################################################################################
+# PASSO 5) TUNAGEM DE HIPERPARÂMETROS
+# a) bases de reamostragem para validação: vfold_cv()
+# b) (opcional) grade de parâmetros: parameters() %>% update() %>% grid_regular()
+# c) tune_grid(y ~ x + ...)
+# d) collect_metrics() ou autoplot() para ver o resultado
+
+#####################################################################################################
+# PASSO 6) MODELO FINAL
+# a) extrai melhor modelo com select_best()
+# b) finaliza o modelo inicial com finalize_model()
+# c) ajusta o modelo final com todos os dados de treino (bases de validação já era)
+
+#####################################################################################################
+# PASSO 7) PREDIÇÕES
+# a) escora a base de teste
+# b) calcula métricas de erro
+# c) usa o modelo para tomar decisões
+# d) curva ROC
+

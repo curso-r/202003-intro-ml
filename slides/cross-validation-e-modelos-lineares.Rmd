@@ -387,7 +387,7 @@ Ver [ISL](https://www.ime.unicamp.br/~dias/Intoduction%20to%20Statistical%20Lear
 
 # Regressão Logística - Custo e Regularização
 
-A **função de custo** da Regressão Logística chama-se *Deviance* (ou *Binary Cross-Entropy*):
+A **função de custo** da Regressão Logística chama-se *log-loss* (ou  *deviance* ou *Binary Cross-Entropy*):
 
 $$D = \frac{1}{N}\sum[y_i \log\hat{y_i} + (1 - y_i )\log(1 - \hat{y_i})]$$
 
@@ -399,6 +399,8 @@ $$D_{regularizado} = D + \color{red}{\lambda}\sum_{j = 1}^{p}|\beta_j|$$
 
 **PS2:** Se $\log\left(\frac{\hat{p_i}}{1-\hat{p_i}}\right) = \beta_0 + \beta_1x$ então 
 $\hat{p_i} = \frac{1}{1 + e^{-(\beta_0 + \beta_1x)}}$. 
+
+
 
 ---
 

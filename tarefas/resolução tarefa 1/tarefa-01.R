@@ -86,7 +86,7 @@ head(df_1)
 library(tidymodels)
 library(tidyverse)
 
-reg <- linear_reg() %>% 
+reg <- linear_reg(penalty = tune()) %>% 
   set_mode("regression") %>% 
   set_engine("lm")
 
@@ -104,6 +104,34 @@ rmse(df_1, truth = b, estimate = b_e)
 # da regularização.
 # 
 # Usando o melhor modelo, compare a imagem original com a imagem reconstruida.
+reg <- linear_reg(penalty = tune()) %>% 
+  set_mode("regression") %>% 
+  set_engine("glmnet")
+
+reamostragens <- vfold_cv(df_1, v = 5)
+
+tunagem <- tune_grid(
+  b ~ x + y + r + g,
+  reg,
+  resamples = reamostragens
+)
+
+collect_metrics(tunagem)
+
+melhor_lm <- select_best(tunagem, "rmse", maximize = FALSE)
+reg <- finalize_model(reg, melhor_lm)
+
+ajuste_melhor_lm <- fit(
+  reg,
+  b ~ x + y + r + g,
+  data = df_1
+)
+
+df_1$b_e_lm <- predict(ajuste_melhor_lm, df_1)$.pred
+
+plot_img_df(df_1, b_e)
+plot_img_df(df_1, b_e_lm)
+plot_img_df(df_1, b)
 
 # 2) Usando CV encontre o melhor modelo de árvore de decisão para recuperar a cor
 # azul da imagem 1 tunando o hiperparâmetro `min_n`.

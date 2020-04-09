@@ -13,7 +13,9 @@ library(rpart.plot)
 
 # PASSO 0) CARREGAR AS BASES
 credit_data <- read_rds("dados/credit_data.rds") %>% na.omit()
-glimpse(credit_data)
+glimpse(credit_data) # German Risk 
+
+credit_data %>% count(Status)
 
 # PASSO 1) BASE TREINO/TESTE
 set.seed(1)
@@ -35,7 +37,7 @@ credit_test  <- testing(data_split)
 # a) a f(x) (ou do modelo): logistc_reg()
 # b) modo (ou natureza da var resp): classification
 # c) hiperparametros que queremos tunar: penalty = tune()
-# d) hiperparametros que não queremos tunar: mixture = 0
+# d) hiperparametros que não queremos tunar: mixture = 0 # QUERO FAZER LASSO
 # e) o motor que queremos usar: glmnet
 credit_lr_model <- logistic_reg(penalty = tune(), mixture = 0) %>%
   set_mode("classification") %>%
@@ -55,16 +57,18 @@ credit_lr_tune_grid <- tune_grid(
   resamples = credit_resamples,
   metrics = metric_set(
     accuracy, 
-    kap, 
+    kap, # KAPPA 
     roc_auc, 
     precision, 
     recall, 
     f_meas, 
-    mn_log_loss
+    mn_log_loss #binary cross entropy
   )
 )
 
 # minha versão do autoplot()
+collect_metrics(credit_lr_tune_grid)
+
 collect_metrics(credit_lr_tune_grid) %>%
   ggplot(aes(x = penalty, y = mean)) +
   geom_point() +
@@ -95,15 +99,15 @@ credit_probs <- predict(credit_lr_fit, credit_test, type = "prob")
 credit_test$Status_prob <- credit_probs$.pred_bad
 
 # roc
-credit_roc_curve <- credit_test %>% roc_curve(Status, Status_pred)
+credit_roc_curve <- credit_test %>% roc_curve(Status, Status_prob)
 autoplot(credit_roc_curve)
 
 # confusion matrix
-credit_test %>% 
+credit_test %>%
   mutate(
-    Status_class = factor(if_else(Status_prob > 0.5, "bad", "good"))
+    Status_class = factor(if_else(Status_prob > 0.6, "bad", "good"))
   ) %>%
-  conf_mat(Status, Status_class) %>% autoplot()
+  conf_mat(Status, Status_class)
 
 # gráficos extras!
 
@@ -135,6 +139,7 @@ credit_test %>%
   geom_label(aes(label = scales::percent(p))) +
   coord_flip()
 
+
 # Us ---------------------------------------------------------------------
 
 # Repetir os passos ajustando uma decision_tree() em vez de logistic_reg()
@@ -146,6 +151,9 @@ credit_test %>%
 # c) hiperparametros que queremos tunar: penalty = tune()
 # d) hiperparametros que não queremos tunar: mixture = 0
 # e) o motor que queremos usar: glmnet
+credit_tree_model <- decision_tree(min_n = tune(), tree_depth = 10, cost_complexity = 0) %>%
+  set_mode("classification") %>%
+  set_engine("rpart")
 
 # PASSO 5) TUNAGEM DE HIPERPARÂMETROS
 # a) bases de reamostragem para validação: vfold_cv()
@@ -153,19 +161,51 @@ credit_test %>%
 # c) tune_grid(y ~ x + ...)
 # d) escolha das métricas (rmse, roc_auc, etc)
 # d) collect_metrics() ou autoplot() para ver o resultado
+credit_tree_resamples <- vfold_cv(credit_train, v = 5)
+
+credit_tree_tune_grid <- tune_grid(
+  Status ~ .,
+  credit_tree_model,
+  resamples = credit_tree_resamples,
+  metrics = metric_set(roc_auc, recall, precision)
+)
 
 # minha versão do autoplot()
+autoplot(credit_tree_tune_grid)
 
 # PASSO 6) MODELO FINAL
 # a) extrai melhor modelo com select_best()
 # b) finaliza o modelo inicial com finalize_model()
 # c) ajusta o modelo final com todos os dados de treino (bases de validação já era)
+credit_tree_best <- select_best(credit_tree_tune_grid, "roc_auc")
+credit_tree_model <- credit_tree_model %>% finalize_model(credit_tree_best)
+
+credit_tree_fit <- fit(
+  credit_tree_model,
+  Status ~.,
+  data = credit_train,
+  metrics = metric_set(roc_auc, recall, precision)
+)
 
 # PASSO 7) PREDIÇÕES
 # a) escora a base de teste (escolher o type: se quer a probabilidade ou a classe)
 # b) calcula métricas de erro/relatório final
 # c) usa o modelo para tomar decisões
 # d) curva ROC
+
+credit_test$Status_prob_tree <- predict(credit_tree_fit, new_data = credit_test, type = "prob")$.pred_bad
+
+# roc
+credit_roc_curve <- credit_test %>% roc_curve(Status, Status_prob_tree)
+autoplot(credit_roc_curve)
+credit_test %>% roc_auc(Status, Status_prob_tree)
+
+# confusion matrix
+credit_test %>%
+  mutate(
+    Status_class = factor(if_else(Status_prob_tree > 0.6, "bad", "good"))
+  ) %>%
+  conf_mat(Status, Status_class)
 
 # You ---------------------------------------------------------------------
 

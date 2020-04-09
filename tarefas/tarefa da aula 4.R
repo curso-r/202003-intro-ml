@@ -3,7 +3,7 @@
 
 # OBJETIVO PRINCIPAL: CRIAR UM CÓDIGO QUE GERE 2 OU MAIS TIPOS DE MODELOS (EX: REGRESSÃO LINEAR E RANDOM FOREST)
 
-# BONUS: foi colocada uma etapa de "exploração" dos dados que será pauta da próxima aula. 
+# BONUS: foi colocada uma etapa de "exploração" dos dados que será pauta da próxima aula.
 
 #####################################################################################################
 # PASSO 0) CARREGAR AS BASES

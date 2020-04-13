@@ -11,16 +11,16 @@
 # Download dos dados -----------------------------------------------------------------------------
 
 # baixa adult.data se nao existe ainda
-if(!file.exists("data/adult.data")) 
-  httr::GET("http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data", httr::write_disk("data/adult.data"))
+if(!file.exists("dados/adult.data")) 
+  httr::GET("http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data", httr::write_disk("dados/adult.data"))
 
 # baixa adult.test se nao existe ainda
-if(!file.exists("data/adult.test"))
-  httr::GET("http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.test", httr::write_disk("data/adult.test"))
+if(!file.exists("dados/adult.test"))
+  httr::GET("http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.test", httr::write_disk("dados/adult.test"))
 
 # baixa adult.names se nao existe ainda
-if(!file.exists("data/adult.test"))
-  httr::GET("http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.names", httr::write_disk("data/adult.names"))
+if(!file.exists("dados/adult.names"))
+  httr::GET("http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.names", httr::write_disk("dados/adult.names"))
 
 # Carrega dados ---------------------------------------------------------------------------------------
 
@@ -67,8 +67,8 @@ adult_test  <- read_csv(file = "data/adult.test", na = c("?", "", "NA"), col_nam
 
 # NESSA PARTE REMOVE-SE O NA APENAS PARA SEGUIR MAIS SUAVE O EXERCÍCIO, MAS NA PRÓXIMA AULA 
 # IREMOS TRATAR ESSE PROBLEMA DE MANEIRA MAIS ADEQUADA!
-adult_train <- adult_train %>% na.omit()
-adult_test <- adult_test %>% na.omit()
+adult_train <- adult_train %>% na.omit() %>% mutate_if(is.character, as.factor)
+adult_test <- adult_test %>% na.omit() %>% mutate_if(is.character, as.factor)
 
 #####################################################################################################
 # PASSO 4) MODELO

@@ -1,13 +1,14 @@
 # Pacotes ------------------------------------------------------------------
 
 library(tidymodels)
+library(rpart)
+library(rpart.plot)
 library(parsnip)
 library(ISLR)
 library(rsample)
 library(dials)
 library(yardstick)
-library(rpart)
-library(rpart.plot)
+library(tidyverse)
 
 # Me ----------------------------------------------------------------------
 
@@ -212,12 +213,66 @@ credit_test %>%
 # Exercício 1) Queremos comparar os modelos.
 # Crie uma tabela que contenha uma linha por modelo e uma coluna por métrica.
 
+credit_lr_preds <- predict(credit_lr_fit, credit_test, type = "prob") %>% 
+  mutate(
+    modelo = "lr",
+    Status = factor(credit_test$Status)
+  )
+
+credit_tree_preds <- predict(credit_tree_fit, credit_test, type = "prob") %>% 
+  mutate(
+    modelo = "tree",
+    Status = factor(credit_test$Status)
+  )
+
+credit_preds <- bind_rows(
+  credit_tree_preds,
+  credit_lr_preds,
+) %>%
+  mutate(
+    pred_prob = .pred_bad,
+    pred_class = factor(if_else(pred_prob > 0.5,  "bad", "good"))
+  ) 
+
+# RESULTS
+credit_comparacao_de_modelos <- credit_preds %>%
+  group_by(modelo) %>%
+  summarise(
+    auc = roc_auc_vec(Status, pred_prob),
+    acc = accuracy_vec(Status, pred_class),
+    prc = precision_vec(Status, pred_class),
+    rec = recall_vec(Status, pred_class),
+    roc = list(roc(Status, pred_prob))
+  ) %>%
+  mutate(roc = set_names(roc, modelo))
 
 # Exercício EXTRA1)
 # Gráficos de risco para o score do modelo de árvore!
+
+# risco por faixa de score
+credit_test %>%
+  gather(modelo, pred, starts_with("Status_prob")) %>%
+  group_by(modelo) %>%
+  mutate(
+    score =  factor(ntile(pred, 10))
+  ) %>%
+  count(modelo, score, Status) %>%
+  ggplot(aes(x = score, y = n, fill = Status)) +
+  geom_col(position = "fill") +
+  geom_label(aes(label = n), position = "fill") +
+  facet_wrap(~ modelo) +
+  coord_flip()
 
 
 # Exercício EXTRA2)
 # As duas curvas ROC (da logistica e da arvore) no mesmo gráfico.
 
+# ROC tipo 1
+ggroc(credit_comparacao_de_modelos$roc)
+
+# ROC tipo 2
+credit_preds %>% 
+  group_by(modelo) %>% 
+  roc_curve(Status, pred_prob) %>% 
+  autoplot()
 

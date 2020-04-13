@@ -181,10 +181,6 @@ adult_tree_fit <- meu_fit(adult_tree_tune_grid, adult_tree_model)
 # c) usa o modelo para tomar decisões
 # d) curva ROC
 
-ks <- function(data, truth, ...) {
-  
-}
-
 adult_lr_preds <- predict(adult_lr_fit, adult_test, type = "prob") %>% 
   mutate(
     modelo = "lr",
@@ -207,7 +203,7 @@ adult_preds <- bind_rows(
   ) 
 
 # RESULTS
-comparacao_de_modelos <- adult_preds %>%
+adult_comparacao_de_modelos <- adult_preds %>%
   group_by(modelo) %>%
   summarise(
     auc = roc_auc_vec(less_than_50k, pred_prob),
@@ -219,7 +215,7 @@ comparacao_de_modelos <- adult_preds %>%
   mutate(roc = set_names(roc, modelo))
 
 # ROC tipo 1
-ggroc(comparacao_de_modelos$roc)
+ggroc(adult_comparacao_de_modelos$roc)
 
 # ROC tipo 2
 adult_preds %>% 
@@ -249,11 +245,22 @@ comparacao_de_modelos <- adult_preds %>%
   mutate(roc = set_names(roc, modelo))
 
 # KS no ggplot2 -------
-adult_preds %>%
-  ggplot(aes(x = pred_prob, linetype = less_than_50k, colour = modelo)) +
+densidade_acumulada <- adult_preds %>%
+  ggplot(aes(x = pred_prob, colour = less_than_50k)) +
   stat_ecdf(size = 1) +
-  theme_minimal() 
+  facet_wrap(~modelo) +
+  theme_minimal()  +
+  labs(title = "Densidade Acumulada")
 
+densidade <- adult_preds %>%
+  ggplot(aes(x = pred_prob, colour = less_than_50k)) +
+  stat_density(size = 1, fill = "transparent", position = "identity") +
+  facet_wrap(~modelo) +
+  theme_minimal() +
+  labs(title = "Densidade")
+
+library(patchwork)
+densidade / densidade_acumulada
 
 # KS "ra raça" ---------
 ks_na_raca_df <- adult_preds %>%

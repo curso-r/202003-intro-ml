@@ -1,3 +1,4 @@
+library(tidymodels)
 library(tidyverse)
 library(rpart)
 library(rpart.plot)
@@ -9,11 +10,19 @@ dados <- tribble(
   "normal",	55,	"nao",
   "hipertensao"	,220,	"sim",
   "normal"	,195,	"sim"
+) %>%
+  mutate(
+    Diabetes = as.factor(Diabetes)
+  )
+
+diabetes_tree_model <- decision_tree(min_n = 1, cost_complexity = -1) %>% set_mode("classification")
+
+credit_tree_fit <- fit(
+  diabetes_tree_model,
+  Diabetes ~.,
+  data = dados
 )
 
-fit <- rpart(Diabetes ~ ., dados, control = rpart.control(cp = -1, minsplit = 0))
-rpart.plot(fit)
+rpart.plot(credit_tree_fit$fit, roundint=FALSE)
+cp <- as.data.frame(credit_tree_fit$fit$cptable)
 
-fit$cptable
-
-writexl::write_xlsx(dados, "exemplo-arvore.xlsx")

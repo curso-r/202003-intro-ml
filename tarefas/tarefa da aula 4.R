@@ -25,7 +25,7 @@ if(!file.exists("dados/adult.names"))
 # Carrega dados ---------------------------------------------------------------------------------------
 
 # prepara os nomes das colunas para colocar no cabecalho
-adult_names <- tibble(name = read_lines("data/adult.names")) %>%
+adult_names <- tibble(name = read_lines("dados/adult.names")) %>%
   filter(
     str_detect(name, "^[^\\|].*:")
   ) %>%
@@ -36,8 +36,8 @@ adult_names <- tibble(name = read_lines("data/adult.names")) %>%
   add_row(name = "less_than_50k", description = "person earn more than USD 50K per year.")
 
 # treino/teste 
-adult_train <- read_csv(file = "data/adult.data", na = c("?", "", "NA"), col_names = adult_names$name)
-adult_test  <- read_csv(file = "data/adult.test", na = c("?", "", "NA"), col_names = adult_names$name, skip = 1) %>%
+adult_train <- read_csv(file = "dados/adult.data", na = c("?", "", "NA"), col_names = adult_names$name)
+adult_test  <- read_csv(file = "dados/adult.test", na = c("?", "", "NA"), col_names = adult_names$name, skip = 1) %>%
   mutate(
     less_than_50k = if_else(less_than_50k == "<=50K.", "<=50K", ">50K")
   )

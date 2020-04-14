@@ -1,7 +1,7 @@
 # Pacotes ------------------------------------------------------------------
 
 library(tidymodels)
-library(rpart)
+library(rpart) # recursive partitioning
 library(rpart.plot)
 library(parsnip)
 library(ISLR)
@@ -9,6 +9,7 @@ library(rsample)
 library(dials)
 library(yardstick)
 library(tidyverse)
+library(pROC)
 
 # Me ----------------------------------------------------------------------
 
@@ -235,6 +236,10 @@ credit_preds <- bind_rows(
   ) 
 
 # RESULTS
+credit_preds %>% group_by(modelo) %>% roc_auc(Status, pred_prob)
+credit_preds %>% group_by(modelo) %>% accuracy(Status, pred_class)
+credit_preds %>% group_by(modelo) %>% recall(Status, pred_class)
+
 credit_comparacao_de_modelos <- credit_preds %>%
   group_by(modelo) %>%
   summarise(
@@ -242,7 +247,7 @@ credit_comparacao_de_modelos <- credit_preds %>%
     acc = accuracy_vec(Status, pred_class),
     prc = precision_vec(Status, pred_class),
     rec = recall_vec(Status, pred_class),
-    roc = list(roc(Status, pred_prob))
+    roc = list(roc(Status, pred_prob)) # pROC::roc
   ) %>%
   mutate(roc = set_names(roc, modelo))
 
@@ -250,6 +255,7 @@ credit_comparacao_de_modelos <- credit_preds %>%
 # Gráficos de risco para o score do modelo de árvore!
 
 # risco por faixa de score
+# gráfico para quaisquer modelos que estejam na base!
 credit_test %>%
   gather(modelo, pred, starts_with("Status_prob")) %>%
   group_by(modelo) %>%
@@ -261,6 +267,17 @@ credit_test %>%
   geom_col(position = "fill") +
   geom_label(aes(label = n), position = "fill") +
   facet_wrap(~ modelo) +
+  coord_flip()
+
+# Gráfico só para LR!!
+credit_test %>%
+  mutate(
+    score =  factor(ntile(Status_prob_tree, 10))
+  ) %>%
+  count(score, Status) %>%
+  ggplot(aes(x = score, y = n, fill = Status)) +
+  geom_col(position = "fill") +
+  geom_label(aes(label = n), position = "fill") +
   coord_flip()
 
 

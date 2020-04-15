@@ -29,12 +29,8 @@ options(htmltools.dir.version = FALSE)
 
 # Conteúdo
 
-- sobre o que é recipes (recipe -> prep -> bake/juice)
-- Principais problemas na variável resposta
-  - desbalanceamento
-  - assimetria
-  - escala
-- Principais problemas nas features
+- recipes (recipe -> prep -> bake/juice)
+- Principais problemas na variável resposta e nas features
     - features categóricas
         - encoding (one-hot, dummy, etc)
         - transformar em número se ordinal
@@ -50,19 +46,16 @@ options(htmltools.dir.version = FALSE)
 
 ---
 
-git config --global user.email "fptcorrea@gmail.com"
-git config -- 
-
 # Recipes
 
 Todos os modelos, de uma forma ou de outra, representam interpretações possíveis da relação entre
 Uma matriz $X$ de variáveis independentes e a coluna $Y$ de variáveis independentes.
 
-Muitas vezes os dados brutos precisam passar por várias transformações até chegar na matrix $X$
+Muitas vezes os dados brutos precisam passar por várias transformações até chegar na matrix $X$.
 
-Por exemplo, é conveniente remover os valores omissos
+Por exemplo, é conveniente tratar os valores omissos.
 
-O pacote `recipes` fornece uma maneira de organizar esse passo transformação dos dados brutos
+O pacote `recipes` fornece uma maneira de organizar esse passo transformação dos dados brutos.
 
 ```{r, eval = FALSE}
 library(recipes)
@@ -73,22 +66,22 @@ receita <- recipes(resposta ~ variavel_dependente1 + variavel_dependente2,
 ```
 
 
-Podemos selecionar as variávels nas quais queremos mexer escrevendo os nomes delas ou usando as funções `all_numeric()`,  `all_nominal()` entre outras
+Podemos selecionar as variávels nas quais queremos mexer escrevendo os nomes delas ou usando as funções `all_numeric()`,  `all_nominal()` entre outras.
 
-Você pode ver o resultado com `receita %>% prep() %>% juice()`
+Você pode ver o resultado com `receita %>% prep() %>% juice()`.
 ---
 
 
 # Valores omissos 
 
 .pull-left[
-**o que é: ** valores omissos são céluals preenchidas com NA. A menos que você tenha um jeito pré-definido de como tratar esse caso, muitas vezes o melhor é removê-los
+**o que é: ** valores omissos são céluals preenchidas com NA. A menos que você tenha um jeito pré-definido de como tratar esse caso, muitas vezes o melhor é removê-los.
 
 **por que fazer**: 
 
 1) para que o motor de regressão não faça isso sozinho sem te avisar;
 
-2) para que os modelos que não aceitam NAs não deem problemas.
+2) para que a variável resposta não entre como vazia.
 
 ]
 
@@ -108,6 +101,10 @@ Você pode ver o resultado com `receita %>% prep() %>% juice()`
 **por que fazer**: 
 
 1) para que os NAs não diminuam muito a sua amostra.
+
+2) para não perder informação de outras colunas.
+
+3) para identificar padrão nos valores omissos.
 
 ]
 
@@ -282,12 +279,12 @@ knitr::include_graphics("img/one-hot-encoding.png")
 ```{r, echo = FALSE, out.width=700}
 knitr::include_graphics("img/workflow.png")
 ```
---- 
+
 ---
 
 # Workflow
 
-Workflows resumem várias etapas em um único código, tornando mais simples ajustar, reajustar e colocar modelos em produção
+Workflows resumem várias etapas em um único código, tornando mais simples ajustar, reajustar e colocar modelos em produção.
 
 ```{r, eval = FALSE}
 preparacao <- recipe(resposta  ~ explicativa, data = dados_brutos) %>% 

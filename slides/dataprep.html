@@ -4,7 +4,7 @@
     <title>Introdução ao Machine Learning com R</title>
     <meta charset="utf-8" />
     <meta name="author" content="" />
-    <meta name="date" content="2020-04-07" />
+    <meta name="date" content="2020-04-15" />
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
     <link rel="stylesheet" href="custom.css" type="text/css" />
@@ -17,7 +17,7 @@ class: center, middle, inverse, title-slide
 # Introdução ao Machine Learning com R
 ## Dataprep e Workflows
 ### <img src = 'https://d33wubrfki0l68.cloudfront.net/9b0699f18268059bdd2e5c21538a29eade7cbd2b/67e5c/img/logo/cursor1-5.png' width = '40%'>
-### 2020-04-07
+### 2020-04-15
 
 ---
 
@@ -27,15 +27,119 @@ class: center, middle, inverse, title-slide
 
 # Conteúdo
 
-- Features categóricas
-- recipes
+- sobre o que é recipes (recipe -&gt; prep -&gt; bake/juice)
+- Principais problemas na variável resposta
+  - desbalanceamento
+  - assimetria
+  - escala
 - Principais problemas nas features
+    - features categóricas
+        - encoding (one-hot, dummy, etc)
+        - transformar em número se ordinal
+    - multicolinearidade
+    - vars constantes
+    - alta cardinalidade (muitas categorias)
+    - categorias pouco frequentes (step_other)
+    - escala
+    - assimetria
+    - valores faltantes
+    - valores novos
 - workflow
 - var importance
+- Seleção de variáveis
+- Criação de atributos (feature engineering)
+- data leakage
 
 ---
 
-# Features Categóricas
+# Recipes
+
+---
+
+# Normalização
+
+.pull-left[
+**o que é: ** é a transformação da variável para ter média próxima de zero e dispersão próxima de 1.
+
+**por que fazer**: 
+
+1) para penalização LASSO funcionar; 
+
+2) para evitar problemas numéricos;
+
+]
+
+.pull-right[
+
+**step**: `step_center()`, `step_scale()`
+
+]
+
+
+---
+
+# Simetrização
+
+.pull-left[
+**o que é: ** é a transformação da variável para ter forma aproximadamente simétrica.
+
+**por que fazer**: 
+
+1) para a estabilidade dos modelos lineares; 
+
+2) menos peso para valores aberrantes (pontos de alavanca);
+
+3) variável resposta precisa ser simétrica para a loss `rmse` não priorizar valores aberrantes.
+
+]
+
+.pull-right[
+
+**step**: `step_YeoJohnson()`, `step_BoxCox()`, `step_log()`
+
+]
+
+---
+
+# Categorias novas
+
+.pull-left[
+**o que é: ** são categorias que não estavam presente na hora do ajuste do modelo.
+
+**por que fazer**: 
+
+1) para o modelo não se negar a criar predições; 
+
+
+]
+
+.pull-right[
+
+**step**: `step_novel()`
+
+]
+
+---
+
+# Categorias raras
+
+.pull-left[
+
+**o que é: ** são categorias com baixa frequência na hora do ajuste do modelo.
+
+**por que fazer**: 
+
+1) para evitar criar colunas com pouca informação (overfitting);
+
+2) para não haver problemas no momento da validação cruzada;
+
+]
+
+.pull-right[
+
+**step**: `step_other()`, `step_nzv()`, `step_zv()`
+
+]
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

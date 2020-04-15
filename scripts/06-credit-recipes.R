@@ -16,20 +16,11 @@ library(pROC)
 library(xgboost)
 
 # Me ----------------------------------------------------------------------
-# Ajustar uma xgboost.
-
-# DICAS:
-# 1) a f(x) é a boost_tree() e o engine default é o xgboost.
-
-# 2) Hiperparâmetros
-# - mtry
-# - trees
-# - min_n
-# - tree_depth
-# - learn_rate
-# - loss_reduction
-# - sample_size
-# Precisamos de uma estratégia!
+# Esse código utiliza recipes e workflows.
+# Os objetivos do código são
+# - introduzir o workflow
+# - introduzir o recipe
+# - rodar vários modelos com recipes diferentes e comparar o desempenho.
 
 # PASSO 0) CARREGAR AS BASES
 credit_data <- read_rds("dados/credit_data.rds") %>% na.omit()
@@ -71,42 +62,54 @@ credit_rf_model <- rand_forest(mtry = tune(), min_n = 2, trees = 800) %>%
   set_mode("classification") %>%
   set_engine("ranger")
 
+credit_xgb_model <- boost_tree(
+  mtry = tune(), 
+  trees = 800, 
+  min_n = 2, 
+  learn_rate = tune(), 
+  sample_size = 0.5, 
+  loss_reduction = tune(), 
+  tree_depth = 5
+) %>%
+  set_mode("classification") %>%
+  set_engine("xgboost")
+
 # PASSO 5) TUNAGEM DE HIPERPARÂMETROS
 # a) bases de reamostragem para validação: vfold_cv()
 # b) (opcional) grade de parâmetros: parameters() %>% update() %>% grid_regular()
 # c) tune_grid(y ~ x + ...)
 # d) escolha das métricas (rmse, roc_auc, etc)
 # d) collect_metrics() ou autoplot() para ver o resultado
+meu_tune_grid <- function(credit_model) {
+  credit_tune_grid <- tune_grid(
+    Status ~ .,
+    credit_model,
+    resamples = credit_resamples,
+    metrics = metric_set(roc_auc, recall, precision)
+  )
+  credit_tune_grid
+}
+
 credit_resamples <- vfold_cv(credit_train, v = 5)
 
 tic("lr")
-credit_lr_tune_grid <- tune_grid(
-  Status ~ .,
-  credit_lr_model,
-  resamples = credit_resamples,
-  metrics = metric_set(roc_auc, recall, precision)
-)
+credit_lr_tune_grid <- meu_tune_grid(credit_lr_model)
 toc()
 
 tic("tree")
-credit_tree_tune_grid <- tune_grid(
-  Status ~ .,
-  credit_tree_model,
-  resamples = credit_resamples,
-  metrics = metric_set(roc_auc, recall, precision)
-)
+credit_tree_tune_grid <- meu_tune_grid(credit_tree_model)
 toc()
 
 tic("rf")
-credit_rf_tune_grid <- tune_grid(
-  Status ~ .,
-  credit_rf_model,
-  resamples = credit_resamples,
-  metrics = metric_set(roc_auc, recall, precision)
-)
+credit_rf_tune_grid <- meu_tune_grid(credit_rf_model)
 toc()
 
-autoplot(credit_rf_tune_grid)
+tic("xgboost")
+credit_xgb_tune_grid <- meu_tune_grid(credit_xgb_model)
+toc()
+
+autoplot(credit_xgb_tune_grid)
+autoplot(credit_xgb_tune_grid) + scale_x_log10()
 
 # PASSO 6) MODELO FINAL
 # a) extrai melhor modelo com select_best()
@@ -127,6 +130,7 @@ meu_fit <- function(tune_grid, model, metric = "roc_auc") {
 credit_lr_fit <- meu_fit(credit_lr_tune_grid, credit_lr_model)
 credit_tree_fit <- meu_fit(credit_tree_tune_grid, credit_tree_model)
 credit_rf_fit <- meu_fit(credit_rf_tune_grid, credit_rf_model)
+credit_xgb_fit <- meu_fit(credit_xgb_tune_grid, credit_xgb_model)
 
 # PASSO 7) PREDIÇÕES
 # a) escora a base de teste (escolher o type: se quer a probabilidade ou a classe)
@@ -141,14 +145,11 @@ meu_predict <- function(credit_fit, modelo) {
     )
 }
 
-credit_lr_preds <- meu_predict(credit_lr_fit, "lr")
-credit_tree_preds <- meu_predict(credit_tree_fit, "tree")
-credit_rf_preds <- meu_predict(credit_rf_fit, "rf")
-
 credit_preds <- bind_rows(
-  credit_tree_preds,
-  credit_lr_preds,
-  credit_rf_preds,
+  meu_predict(credit_lr_fit, "lr"),
+  meu_predict(credit_tree_fit, "tree"),
+  meu_predict(credit_rf_fit, "rf"),
+  meu_predict(credit_xgb_fit, "xgb")
 ) %>%
   mutate(
     pred_prob = `.pred_bad`,
@@ -177,3 +178,4 @@ credit_preds %>%
   group_by(modelo) %>% 
   roc_curve(Status, pred_prob) %>% 
   autoplot()
+

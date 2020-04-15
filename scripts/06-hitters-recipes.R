@@ -1,10 +1,6 @@
 # pacotes 
-# library(tidyverse)
 library(tidymodels)
 library(DataExplorer)
-# library(purrr)
-# library(rpart)
-# library(rpart.plot)
 library(ISLR)
 library(skimr)
 
@@ -26,17 +22,34 @@ plot_bar(hitters_train)
 plot_histogram(hitters_train)
 plot_histogram(hitters_train %>% mutate_if(is.numeric, log1p))
 plot_qq(hitters_train)
-plot_qq(hitters_train %>% mutate(capital_saldo = capital_gain + capital_loss) %>% mutate_if(is.numeric, log1p))
 plot_correlation(na.omit(hitters_train), maxcat = 5L)
 plot_correlation(na.omit(hitters_train), type = "c")
 gg_miss_var(hitters_train)
 vis_miss(hitters_train)
 gg_miss_case(hitters_train)
 
+# relacao da resposta com as vars numericas
 hitters_train %>%
   select_if(is.numeric) %>%
   gather(variavel, valor, -Salary) %>%
-  
+  ggplot(aes(x = valor, y = Salary)) +
+  geom_point() +
+  facet_wrap(~variavel, scales = "free") + 
+  geom_smooth(se = FALSE) +
+  scale_y_log10()
+
+# relacao da resposta com as vars numericas (escala LOG)
+hitters_train %>%
+  filter(CHits > 10) %>%
+  select(League, CHmRun, CHits, Salary) %>%
+  gather(variavel, valor, -Salary, -League) %>%
+  ggplot(aes(x = valor, y = Salary)) +
+  geom_point() +
+  facet_wrap(~variavel, scales = "free") + 
+  geom_smooth(se = FALSE) +
+  scale_x_log10() +
+  scale_y_log10()
+
 # dataprep com recipe -----------------------------------
 
 hitters_sem_dataprep_recipe <- recipe(Salary ~ CHmRun + League, data = hitters_train) %>%

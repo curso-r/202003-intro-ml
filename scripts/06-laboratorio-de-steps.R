@@ -1,6 +1,7 @@
 library(tidymodels)
-# laboratorio de steps
+library(tidyverse)
 
+# laboratorio de steps
 receita <- recipe(disp ~ ., data = mtcars)
 
 receita %>% prep %>% juice

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<html lang="" xml:lang="">
   <head>
     <title>Introdução ao Machine Learning com R</title>
     <meta charset="utf-8" />
@@ -45,14 +45,73 @@ class: center, middle, inverse, title-slide
     - valores faltantes
     - valores novos
 - workflow
-- var importance
-- Seleção de variáveis
-- Criação de atributos (feature engineering)
-- data leakage
 
 ---
 
 # Recipes
+
+Todos os modelos, de uma forma ou de outra, representam interpretações possíveis da relação entre
+Uma matriz `\(X\)` de variáveis independentes e a coluna `\(Y\)` de variáveis independentes.
+
+Muitas vezes os dados brutos precisam passar por várias transformações até chegar na matrix `\(X\)`
+
+Por exemplo, é conveniente remover os valores omissos
+
+O pacote `recipes` fornece uma maneira de organizar esse passo transformação dos dados brutos
+
+
+```r
+library(recipes)
+
+receita &lt;- recipes(resposta ~ variavel_dependente1 + variavel_dependente2,
+                   data = dados_brutos) %&gt;% 
+  step_naomit()
+```
+
+
+Podemos selecionar as variávels nas quais queremos mexer escrevendo os nomes delas ou usando as funções `all_numeric()`,  `all_nominal()` entre outras
+
+Você pode ver o resultado com `receita %&gt;% prep() %&gt;% juice()`
+---
+
+
+# Valores omissos 
+
+.pull-left[
+**o que é: ** valores omissos são céluals preenchidas com NA. A menos que você tenha um jeito pré-definido de como tratar esse caso, muitas vezes o melhor é removê-los
+
+**por que fazer**: 
+
+1) para que o motor de regressão não faça isso sozinho sem te avisar;
+
+2) para que os modelos que não aceitam NAs não deem problemas.
+
+]
+
+.pull-right[
+
+**step**: `step_naomit()`
+
+]
+
+---
+
+# Valores omissos 
+
+.pull-left[
+**o que é: ** valores omissos são céluals preenchidas com NA. Se você quiser, pode trocar os NAs de uma coluna números pelo seu valor médio ou mediano.
+
+**por que fazer**: 
+
+1) para que os NAs não diminuam muito a sua amostra.
+
+]
+
+.pull-right[
+
+**step**: `step_medianimpute()`, `step_meanimpute()`, `step_unknown()`
+
+]
 
 ---
 
@@ -101,6 +160,28 @@ class: center, middle, inverse, title-slide
 
 ---
 
+# Multicolinearidade
+
+.pull-left[
+
+**o que é: **  variáveis que são muito similares confundem os modelos. Uma variável "atrapalha" a outra. Em regressão os \beta's se dividem entre as variáveis correlacionadas.
+
+**por que fazer**: 
+
+1) para evitar modelos que com redundâncias;
+
+2) para evitar problemas numéricos
+
+]
+
+.pull-right[
+
+**step**: `step_corr()`, `step_lincomb()`
+
+]
+
+---
+
 # Categorias novas
 
 .pull-left[
@@ -140,6 +221,80 @@ class: center, middle, inverse, title-slide
 **step**: `step_other()`, `step_nzv()`, `step_zv()`
 
 ]
+
+---
+
+# Dummy
+
+.pull-left[
+
+**o que é: ** Muitos modelos só sabem lidar com números. Categorias precisam virar números, explicitamente ou por trás dos panos. Uma variável binária do tipo "Sim" ou "Não"; "A" ou "B" etc precisa virar uma coluna 1 ou 0.
+
+**por que fazer**: 
+
+1) para ter mais clareza sobre o passo a passo da modelagem;
+
+2) porque alguns modelos só trabalham dessa forma;
+
+]
+
+.pull-right[
+
+**step**: `step_dummy()`
+
+]
+
+---
+
+# One-hot
+
+.pull-left[
+
+**o que é: ** Muitos modelos só sabem lidar com números. Categorias precisam virar números, explicitamente ou por trás dos panos. Uma variável categorizada do tipo "Sim", "Não" ou "Talvez"; "A", "B" ou "C" etc precisa virar duas ou mais colunas de 1 e 0.
+
+
+**por que fazer**: 
+
+1) para ter mais clareza sobre o passo a passo da modelagem;
+
+2) porque alguns modelos só trabalham dessa forma;
+
+]
+
+.pull-right[
+
+**step**: `step_dummy()`
+
+&lt;img src="img/one-hot-encoding.png" width="1352" /&gt;
+
+]
+
+---
+
+# Workflow
+
+&lt;img src="img/workflow.png" width="700" /&gt;
+--- 
+---
+
+# Workflow
+
+Workflows resumem várias etapas em um único código, tornando mais simples ajustar, reajustar e colocar modelos em produção
+
+
+```r
+preparacao &lt;- recipe(resposta  ~ explicativa, data = dados_brutos) %&gt;% 
+  step_naomit() %&gt;% 
+  step_scale(all_numeric())
+
+modelo_linear &lt;- logistic_reg() 
+
+fluxo_modelagem &lt;- workflow() %&gt;% 
+  add_recipe(preparacao) %&gt;% 
+  add_model(modelo_linear)
+
+fit(fluxo_modelagem, dados_brutos)
+```
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
@@ -187,9 +342,25 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
     }
     deleted = true;
   });
-})();</script>
-
-<script>
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
 (function() {
   var links = document.getElementsByTagName('a');
   for (var i = 0; i < links.length; i++) {
@@ -198,7 +369,23 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
     }
   }
 })();
-</script>
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
 
 <script>
 slideshow._releaseMath = function(el) {

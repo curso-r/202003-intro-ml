@@ -47,14 +47,75 @@ options(htmltools.dir.version = FALSE)
     - valores faltantes
     - valores novos
 - workflow
-- var importance
-- Seleção de variáveis
-- Criação de atributos (feature engineering)
-- data leakage
 
 ---
 
+git config --global user.email "fptcorrea@gmail.com"
+git config -- 
+
 # Recipes
+
+Todos os modelos, de uma forma ou de outra, representam interpretações possíveis da relação entre
+Uma matriz $X$ de variáveis independentes e a coluna $Y$ de variáveis independentes.
+
+Muitas vezes os dados brutos precisam passar por várias transformações até chegar na matrix $X$
+
+Por exemplo, é conveniente remover os valores omissos
+
+O pacote `recipes` fornece uma maneira de organizar esse passo transformação dos dados brutos
+
+```{r, eval = FALSE}
+library(recipes)
+
+receita <- recipes(resposta ~ variavel_dependente1 + variavel_dependente2,
+                   data = dados_brutos) %>% 
+  step_naomit()
+```
+
+
+Podemos selecionar as variávels nas quais queremos mexer escrevendo os nomes delas ou usando as funções `all_numeric()`,  `all_nominal()` entre outras
+
+Você pode ver o resultado com `receita %>% prep() %>% juice()`
+---
+
+
+# Valores omissos 
+
+.pull-left[
+**o que é: ** valores omissos são céluals preenchidas com NA. A menos que você tenha um jeito pré-definido de como tratar esse caso, muitas vezes o melhor é removê-los
+
+**por que fazer**: 
+
+1) para que o motor de regressão não faça isso sozinho sem te avisar;
+
+2) para que os modelos que não aceitam NAs não deem problemas.
+
+]
+
+.pull-right[
+
+**step**: `step_naomit()`
+
+]
+
+---
+
+# Valores omissos 
+
+.pull-left[
+**o que é: ** valores omissos são céluals preenchidas com NA. Se você quiser, pode trocar os NAs de uma coluna números pelo seu valor médio ou mediano.
+
+**por que fazer**: 
+
+1) para que os NAs não diminuam muito a sua amostra.
+
+]
+
+.pull-right[
+
+**step**: `step_medianimpute()`, `step_meanimpute()`, `step_unknown()`
+
+]
 
 ---
 
@@ -103,6 +164,28 @@ options(htmltools.dir.version = FALSE)
 
 ---
 
+# Multicolinearidade
+
+.pull-left[
+
+**o que é: **  variáveis que são muito similares confundem os modelos. Uma variável "atrapalha" a outra. Em regressão os \beta's se dividem entre as variáveis correlacionadas.
+
+**por que fazer**: 
+
+1) para evitar modelos que com redundâncias;
+
+2) para evitar problemas numéricos
+
+]
+
+.pull-right[
+
+**step**: `step_corr()`, `step_lincomb()`
+
+]
+
+---
+
 # Categorias novas
 
 .pull-left[
@@ -143,5 +226,80 @@ options(htmltools.dir.version = FALSE)
 
 ]
 
+---
 
+# Dummy
+
+.pull-left[
+
+**o que é: ** Muitos modelos só sabem lidar com números. Categorias precisam virar números, explicitamente ou por trás dos panos. Uma variável binária do tipo "Sim" ou "Não"; "A" ou "B" etc precisa virar uma coluna 1 ou 0.
+
+**por que fazer**: 
+
+1) para ter mais clareza sobre o passo a passo da modelagem;
+
+2) porque alguns modelos só trabalham dessa forma;
+
+]
+
+.pull-right[
+
+**step**: `step_dummy()`
+
+]
+
+---
+
+# One-hot
+
+.pull-left[
+
+**o que é: ** Muitos modelos só sabem lidar com números. Categorias precisam virar números, explicitamente ou por trás dos panos. Uma variável categorizada do tipo "Sim", "Não" ou "Talvez"; "A", "B" ou "C" etc precisa virar duas ou mais colunas de 1 e 0.
+
+
+**por que fazer**: 
+
+1) para ter mais clareza sobre o passo a passo da modelagem;
+
+2) porque alguns modelos só trabalham dessa forma;
+
+]
+
+.pull-right[
+
+**step**: `step_dummy()`
+
+```{r, echo = FALSE}
+knitr::include_graphics("img/one-hot-encoding.png")
+```
+
+]
+
+---
+
+# Workflow
+
+```{r, echo = FALSE, out.width=700}
+knitr::include_graphics("img/workflow.png")
+```
+--- 
+---
+
+# Workflow
+
+Workflows resumem várias etapas em um único código, tornando mais simples ajustar, reajustar e colocar modelos em produção
+
+```{r, eval = FALSE}
+preparacao <- recipe(resposta  ~ explicativa, data = dados_brutos) %>% 
+  step_naomit() %>% 
+  step_scale(all_numeric())
+
+modelo_linear <- logistic_reg() 
+
+fluxo_modelagem <- workflow() %>% 
+  add_recipe(preparacao) %>% 
+  add_model(modelo_linear)
+
+fit(fluxo_modelagem, dados_brutos)
+```
 

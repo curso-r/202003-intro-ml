@@ -3,6 +3,7 @@ library(tidymodels)
 library(DataExplorer)
 library(ISLR)
 library(skimr)
+library(naniar)
 
 # carrega dados (já foi carregado pelo pacote ISLR)
 glimpse(Hitters)
@@ -54,10 +55,10 @@ hitters_train %>%
 
 hitters_sem_dataprep_recipe <- recipe(Salary ~ CHmRun + League, data = hitters_train) %>%
   step_dummy(all_nominal(), -all_outcomes()) %>%
-  step_log(all_outcomes())
+  step_log(all_outcomes()) # estou transformando o Salary em log(Salary)
 
-hitters_recipe <- hitters_sem_dataprep_recipe  %>%
-  step_log(CHmRun, offset = 1) %>%
+hitters_recipe <- hitters_sem_dataprep_recipe %>%
+  step_log(CHmRun, offset = 1) %>% # log(CHmRun + 1)
   step_normalize(CHmRun) 
 
 juice(prep(hitters_sem_dataprep_recipe))
@@ -70,7 +71,7 @@ hitters_lr_model <- linear_reg(penalty = tune()) %>%
 # workflow -----------------------------------------------
 hitters_lr_sem_dataprep_workflow <- workflow() %>% 
   add_recipe(hitters_sem_dataprep_recipe) %>%
-  add_model(hitters_lr_model) 
+  add_model(hitters_lr_model)
 
 hitters_lr_workflow <- hitters_lr_sem_dataprep_workflow %>% 
   update_recipe(hitters_recipe)
@@ -80,17 +81,34 @@ set.seed(1)
 hitters_resamples <- vfold_cv(hitters_train, v = 5)
 
 # tune grid ----------------------------------------------
-hitters_lr_sem_dataprep_tune_grid <- hitters_lr_sem_dataprep_workflow %>%
-  tune_grid(hitters_resamples)
+hitters_lr_sem_dataprep_tune_grid <- tune_grid(
+  hitters_lr_sem_dataprep_workflow,
+  hitters_resamples
+)
 
 hitters_lr_tune_grid <- hitters_lr_workflow %>%
   tune_grid(hitters_resamples)
 
+autoplot(hitters_lr_tune_grid) + scale_x_log10()
+
 # modelo final -------------------------------------------
+
+meu_fit <- function(tune_grid, model, metric = "roc_auc") {
+  credit_best_model <- select_best(tune_grid, metric)
+  credit_final_model <- finalize_model(model, credit_best_model)
+  
+  credit_fit <- fit(
+    credit_final_model,
+    Status ~ ., 
+    data = credit_train
+  )
+  credit_fit
+}
+
 meu_fit <- function(tune_grid, workflow) {
   best <- select_best(tune_grid, metric = "rmse", maximize = FALSE)
   hitters_lr_fit <- workflow %>%
-    finalize_workflow(hitters_lr_best) %>%
+    finalize_workflow(best) %>%
     fit(hitters_train)
 }
 
@@ -104,6 +122,7 @@ meu_predict <- function(fit, model) {
     bake(hitters_test) %>%
     pull(Salary)
   
+  # base de teste -> aplica transformacao -> faz a predicao (aplica o fit) -> base de dados boa
   predict(fit, hitters_test) %>% 
     mutate(
       modelo = model,

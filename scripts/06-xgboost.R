@@ -72,13 +72,13 @@ credit_rf_model <- rand_forest(mtry = tune(), min_n = 2, trees = 800) %>%
   set_engine("ranger")
 
 credit_xgb_model <- boost_tree(
-  mtry = tune(), 
+  mtry = 17, 
   trees = 800, 
   min_n = 2, 
   learn_rate = tune(), 
   sample_size = 0.5, 
   loss_reduction = tune(), 
-  tree_depth = 5
+  tree_depth = 1
 ) %>%
   set_mode("classification") %>%
   set_engine("xgboost")
@@ -119,7 +119,7 @@ toc()
 
 autoplot(credit_xgb_tune_grid)
 autoplot(credit_xgb_tune_grid) + scale_x_log10()
-
+select_best(credit_xgb_tune_grid, "roc_auc")
 # PASSO 6) MODELO FINAL
 # a) extrai melhor modelo com select_best()
 # b) finaliza o modelo inicial com finalize_model()

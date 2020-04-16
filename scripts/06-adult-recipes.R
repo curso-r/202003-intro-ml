@@ -80,16 +80,27 @@ adult_train %>%
 # dataprep com recipe -----------------------------------
 adult_sem_dataprep_recipe <- recipe(adult_train, less_than_50k ~ .) %>%
   step_novel(all_predictors(), -all_numeric()) %>%
-  step_unknown(occupation, workclass, native_country)
+  step_unknown(occupation, workclass, native_country) %>%
+  step_naomit(less_than_50k)
 
 adult_recipe <- adult_sem_dataprep_recipe %>%
-  step_other(all_nominal(), -all_outcomes(), threshold = 0.05) %>%
+  step_other(all_nominal(), -all_outcomes(), threshold = 0.01) %>%
   step_log(fnlwgt, age) %>%
   step_normalize(fnlwgt, age) %>%
   step_zv(all_predictors()) %>%
-  step_corr(all_numeric()) 
+  step_corr(all_numeric()) %>%
+  step_center(all_numeric()) %>%
+  step_scale(all_numeric()) %>%
+  step_zv() %>%
+  step_corr(all_numeric(), -all_outcomes()) %>%
+  step_other(all_nominal(), -all_outcomes(), threshold = 0.05) %>%
+  step_dummy(all_nominal())
 
-juice(prep(adult_sem_dataprep_recipe))
+
+receita_preparada <- prep(adult_sem_dataprep_recipe)
+
+base_preparada <- juice(prep(adult_sem_dataprep_recipe))
+plot_bar(base_preparada)
 juice(prep(adult_recipe))
 
 # modelo ------------------------------------------------

@@ -112,3 +112,5 @@ especificacao_arvore <- decision_tree(min_n = 5) %>%
 # Se tiver dúvidas sobre a base, digite help(Hitters)
 # 3. Calcule RMSE, MAPE, MAE e MASE do modelo que você ajustou.
 # 4. [Extra] Faça um gráfico comparando as suas predições e o que realmente aconteceu.
+
+vip(modelo$fit)

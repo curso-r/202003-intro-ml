@@ -42,6 +42,29 @@ adult_test  <- read_csv(file = "dados/adult.test", na = c("?", "", "NA"), col_na
     less_than_50k = if_else(less_than_50k == "<=50K.", "<=50K", ">50K")
   )
 
+adult <- bind_rows(
+  adult_train,
+  adult_test
+)
+
+adult <- adult_train %>% rename(resposta = less_than_50k)
+adult_test <- adult_test %>% rename(resposta = less_than_50k)
+adult$id <- 1:nrow(adult)
+adult_test$id <- nrow(adult) + 1:nrow(adult_test)
+
+
+submission <- adult_test %>%
+  select(id) %>%
+  mutate(
+  more_than_50k = ifelse(adult_test$resposta == ">50K", 1, 0)
+)
+
+adult_test$less_than_50k <- NULL
+
+write_rds(adult_test, path = "adult_val.rds")
+write_rds(adult, path = "adult.rds")
+
+
 # exploracao --------------------------------------------
 glimpse(adult_train)
 skim(adult_train)

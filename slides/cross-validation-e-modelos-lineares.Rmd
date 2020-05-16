@@ -19,8 +19,8 @@ library(magrittr)
 library(knitr)
 library(kableExtra)
 library(tidyverse)
-library(plot3D)
-library(ISLR)
+# library(plot3D) 
+# library(ISLR)
 theme_set(theme_minimal(14))
 options(htmltools.dir.version = FALSE)
 ```
@@ -125,7 +125,7 @@ $$
 ```{r,echo = FALSE, fig.height=4.5}
 grafico_da_reta <- ggplot(cars, aes(x = speed, y = dist)) + 
   geom_point(size = 5)  +
-  geom_smooth(se = FALSE, size = 3, method = "lm") +
+  geom_smooth(se = FALSE, size = 3, method = "lm", colour = "red") +
   theme_minimal(24)+
   labs(
     title = " "

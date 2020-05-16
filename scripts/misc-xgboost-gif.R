@@ -74,18 +74,28 @@ gera_gif(
   min_n = 1, 
   tree_depth = 1, 
   learn_rate = 1, 
-  sample_size = 1, 
-  loss_reduction = 1
+  sample_size = 0.5, 
+  loss_reduction = 0
 )
 
 # tree_depth = 2
 gera_gif( 
-  trees = 100, 
+  trees = 50, 
   min_n = 1, 
   tree_depth = 2, 
   learn_rate = 1, 
   sample_size = 1, 
   loss_reduction = 1
+)
+
+# tree_depth = 20
+gera_gif( 
+  trees = 50, 
+  min_n = 1, 
+  tree_depth = 300, 
+  learn_rate = 1, 
+  sample_size = 0.5, 
+  loss_reduction = 0
 )
 
 # learn_rate = 0.1, 

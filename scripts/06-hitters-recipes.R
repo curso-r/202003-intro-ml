@@ -155,6 +155,6 @@ hitters_preds %>%
   theme_minimal(16)
 
 
-
-
+library(vip)
+vip(hitters_lr_sem_dataprep_fit$f$fit$fit %>% class)
 
